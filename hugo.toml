@@ -1,0 +1,9 @@
+baseURL = "https://anwaltsagent.de/"
+languageCode = "de-DE"
+title = "Anwaltsagent.de"
+theme = "ananke"
+enableRobotsTXT = true
+
+[sitemap]
+  changefreq = "weekly"
+  priority = 0.5
