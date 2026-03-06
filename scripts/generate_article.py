@@ -45,8 +45,9 @@ def generate_with_fallback(prompt):
                 contents=prompt
             )
             return response.text
-        except Exception as e:
-            if "429" in str(e) or "quota" in str(e).lower():
+     except Exception as e:
+            print(f"Error with key: {str(e)[:200]}")
+            if "429" in str(e) or "quota" in str(e).lower() or "exhausted" in str(e).lower():
                 print(f"Key exhausted, trying next...")
                 continue
             raise e
