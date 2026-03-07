@@ -3,7 +3,7 @@
   .article-wrap {
     max-width: 860px;
     margin: 0 auto;
-    padding: 32px 18px 56px;
+    padding: 34px 18px 60px;
     color: #111827;
     overflow-wrap: break-word;
     word-wrap: break-word;
@@ -16,20 +16,20 @@
   .article-label {
     display: inline-block;
     font-size: 12px;
-    font-weight: 700;
+    font-weight: 800;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: #e94560;
     background: #fff1f4;
     border-radius: 999px;
-    padding: 6px 10px;
+    padding: 7px 11px;
     margin-bottom: 14px;
   }
 
   .article-title {
     font-size: 46px;
     line-height: 1.12;
-    font-weight: 800;
+    font-weight: 900;
     margin: 0 0 14px;
     color: #111827;
     overflow-wrap: break-word;
@@ -38,7 +38,7 @@
 
   .article-description {
     font-size: 20px;
-    line-height: 1.7;
+    line-height: 1.75;
     color: #4b5563;
     margin: 0;
   }
@@ -47,7 +47,7 @@
     width: 100%;
     display: block;
     border-radius: 18px;
-    margin: 28px 0 34px;
+    margin: 30px 0 34px;
     object-fit: cover;
     max-height: 460px;
   }
@@ -63,7 +63,7 @@
   .article-content h3,
   .article-content h4 {
     line-height: 1.2;
-    font-weight: 800;
+    font-weight: 900;
     color: #111827;
     margin-top: 38px;
     margin-bottom: 18px;
@@ -104,7 +104,7 @@
   }
 
   .article-content a {
-    color: #3b2ebf;
+    color: #2563eb;
     text-decoration: none;
   }
 
@@ -112,13 +112,71 @@
     text-decoration: underline;
   }
 
+  .article-cta {
+    margin-top: 42px;
+    padding: 28px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #0f172a 0%, #16213e 55%, #0f3460 100%);
+    color: white;
+    box-shadow: 0 18px 36px rgba(15, 23, 42, 0.12);
+  }
+
+  .article-cta h3 {
+    margin: 0 0 10px;
+    font-size: 26px;
+    line-height: 1.2;
+    color: white;
+  }
+
+  .article-cta p {
+    margin: 0 0 18px;
+    color: #dbe4ff;
+    font-size: 16px;
+    line-height: 1.8;
+  }
+
+  .article-cta-buttons {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .article-cta-buy,
+  .article-cta-contact {
+    display: inline-block;
+    padding: 14px 20px;
+    border-radius: 12px;
+    font-weight: 800;
+    font-size: 15px;
+    transition: 0.2s ease;
+  }
+
+  .article-cta-buy {
+    background: #e94560;
+    color: white;
+  }
+
+  .article-cta-buy:hover {
+    background: #d73753;
+  }
+
+  .article-cta-contact {
+    border: 2px solid rgba(255,255,255,0.25);
+    color: white;
+    background: transparent;
+  }
+
+  .article-cta-contact:hover {
+    border-color: white;
+  }
+
   @media (max-width: 768px) {
     .article-wrap {
-      padding: 22px 16px 44px;
+      padding: 24px 16px 46px;
     }
 
     .article-title {
-      font-size: 28px;
+      font-size: 30px;
       line-height: 1.18;
     }
 
@@ -147,6 +205,20 @@
     .article-content ol {
       padding-left: 22px;
     }
+
+    .article-cta {
+      padding: 22px 18px;
+    }
+
+    .article-cta h3 {
+      font-size: 22px;
+    }
+
+    .article-cta-buy,
+    .article-cta-contact {
+      width: 100%;
+      text-align: center;
+    }
   }
 </style>
 
@@ -166,6 +238,24 @@
 
   <div class="article-content">
     {{ .Content }}
+  </div>
+
+  <div class="article-cta">
+    <h3>Interesse an Anwaltsagent.de?</h3>
+    <p>
+      Diese Domain kann eine starke Marke für Legal-Tech, digitale Rechtsberatung
+      oder Mandantenvermittlung in Deutschland sein.
+    </p>
+
+    <div class="article-cta-buttons">
+      <a href="https://sedo.com/search/details/?partnerid=324561&language=ar&domain=anwaltsagent.de&origin=sales_lander_15&utm_medium=Parking&utm_campaign=offerpage" class="article-cta-buy">
+        Über Sedo kaufen
+      </a>
+
+      <a href="/#kontakt" class="article-cta-contact">
+        Direkt kontaktieren
+      </a>
+    </div>
   </div>
 </article>
 {{ end }}
