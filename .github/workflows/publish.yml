@@ -3,7 +3,7 @@ name: Auto Publish Article
 on:
   schedule:
     - cron: '0 8 * * 1'
-    - cron: '0 8 * * 4'
+    - cron: '0 8 * * 3'
   workflow_dispatch:
 
 permissions:
@@ -30,6 +30,19 @@ jobs:
         env:
           OPENROUTER_KEY: ${{ secrets.OPENROUTER_KEY }}
 
+      - name: Get latest article info
+        id: article
+        run: |
+          LATEST_FILE=$(ls -t content/posts/*.md | head -n 1)
+          echo "latest_file=$LATEST_FILE" >> $GITHUB_OUTPUT
+
+          TITLE=$(grep -m 1 '^title:' "$LATEST_FILE" | sed 's/title: "//; s/"$//')
+          FILENAME=$(basename "$LATEST_FILE" .md)
+          URL="https://anwaltsagent.de/posts/${FILENAME}/"
+
+          echo "title=$TITLE" >> $GITHUB_OUTPUT
+          echo "url=$URL" >> $GITHUB_OUTPUT
+
       - name: Commit and push
         run: |
           git config user.name "AutoBot"
@@ -37,3 +50,22 @@ jobs:
           git add content/posts/ || true
           git diff --cached --quiet || git commit -m "auto: article $(date +%Y-%m-%d)"
           git push
+
+      - name: Send article email
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.GMAIL_USER }}
+          password: ${{ secrets.GMAIL_APP_PASSWORD }}
+          subject: "Neuer Artikel auf Anwaltsagent.de"
+          to: ${{ secrets.GMAIL_USER }}
+          from: ${{ secrets.GMAIL_USER }}
+          body: |
+            Ein neuer Artikel wurde veröffentlicht.
+
+            Titel:
+            ${{ steps.article.outputs.title }}
+
+            Link:
+            ${{ steps.article.outputs.url }}
