@@ -8,14 +8,10 @@
   .article-wrap {
     max-width: 860px;
     margin: 0 auto;
-    padding: 42px 18px 64px;
+    padding: 42px 18px 70px;
     color: #111827;
     overflow-wrap: break-word;
     word-wrap: break-word;
-  }
-
-  .article-header {
-    margin-bottom: 26px;
   }
 
   .article-label {
@@ -28,7 +24,7 @@
     background: #fff1f4;
     border-radius: 999px;
     padding: 7px 11px;
-    margin-bottom: 14px;
+    margin-bottom: 18px;
   }
 
   .article-title {
@@ -37,7 +33,6 @@
     font-weight: 900;
     margin: 0 0 14px;
     color: #111827;
-    overflow-wrap: break-word;
     word-break: break-word;
   }
 
@@ -45,16 +40,16 @@
     font-size: 18px;
     line-height: 1.75;
     color: #4b5563;
-    margin: 0;
+    margin: 0 0 26px;
   }
 
   .article-image {
     width: 100%;
     display: block;
     border-radius: 18px;
-    margin: 28px 0 32px;
+    margin: 0 0 30px;
     object-fit: cover;
-    max-height: 420px;
+    max-height: 430px;
   }
 
   .article-content {
@@ -72,7 +67,6 @@
     color: #111827;
     margin-top: 34px;
     margin-bottom: 16px;
-    overflow-wrap: break-word;
     word-break: break-word;
   }
 
@@ -80,13 +74,6 @@
   .article-content h2 { font-size: 28px; }
   .article-content h3 { font-size: 24px; }
   .article-content h4 { font-size: 20px; }
-
-  .article-content p,
-  .article-content li,
-  .article-content blockquote {
-    overflow-wrap: break-word;
-    word-break: break-word;
-  }
 
   .article-content p {
     margin: 0 0 20px;
@@ -117,8 +104,14 @@
     text-decoration: underline;
   }
 
+  .article-divider {
+    margin: 28px 0 32px;
+    border: none;
+    border-top: 1px solid #e5e7eb;
+  }
+
   .article-cta {
-    margin-top: 40px;
+    margin-top: 42px;
     padding: 26px;
     border-radius: 20px;
     background: linear-gradient(135deg, #0f172a 0%, #16213e 55%, #0f3460 100%);
@@ -191,7 +184,7 @@
     }
 
     .article-image {
-      margin: 22px 0 28px;
+      margin-bottom: 24px;
       border-radius: 14px;
       max-height: 260px;
     }
@@ -229,18 +222,19 @@
 
 <div class="article-shell">
   <article class="article-wrap">
-    <header class="article-header">
-      <div class="article-label">Artikel</div>
-      <h1 class="article-title">{{ .Title }}</h1>
+    <div class="article-label">Artikel</div>
 
-      {{ if .Description }}
-      <p class="article-description">{{ .Description }}</p>
-      {{ end }}
-    </header>
+    <h1 class="article-title">{{ .Title }}</h1>
+
+    {{ if .Description }}
+    <p class="article-description">{{ .Description }}</p>
+    {{ end }}
 
     {{ if .Params.image }}
     <img class="article-image" src="{{ .Params.image }}" alt="{{ .Title }}">
     {{ end }}
+
+    <hr class="article-divider">
 
     <div class="article-content">
       {{ .Content }}
