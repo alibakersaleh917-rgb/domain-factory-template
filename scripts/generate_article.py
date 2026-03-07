@@ -9,8 +9,8 @@ import requests
 from difflib import SequenceMatcher
 
 OPENROUTER_KEY = os.environ["OPENROUTER_KEY"]
+UNSPLASH_KEY = os.environ["UNSPLASH_KEY"]
 
-# اقتصادي وعملي
 WRITER_MODEL = "google/gemini-2.0-flash-lite-001"
 REVIEW_MODEL = "mistralai/mistral-small-24b-instruct-2501"
 
@@ -30,6 +30,7 @@ CONFIG = {
 }
 
 POSTS_DIR = Path("content/posts")
+IMAGES_DIR = Path("static/images")
 TODAY = datetime.datetime.utcnow().strftime("%Y-%m-%d")
 KEYWORD = random.choice(CONFIG["keywords"])
 
@@ -74,7 +75,6 @@ def slugify(text: str) -> str:
 
 
 def extract_markdown_block(text: str) -> str:
-    # لو رجّع الموديل markdown fenced block
     match = re.search(r"```(?:markdown|md)?\s*(.*?)```", text, re.DOTALL | re.IGNORECASE)
     if match:
         return match.group(1).strip()
@@ -110,12 +110,14 @@ def parse_frontmatter(article: str):
     description = grab(r'^description:\s*["\']?(.*?)["\']?$')
     date_value = grab(r'^date:\s*["\']?(.*?)["\']?$')
     keywords_line = grab(r"^keywords:\s*(.*?)$")
+    image_line = grab(r'^image:\s*["\']?(.*?)["\']?$')
 
     return {
         "title": title,
         "description": description,
         "date": date_value,
         "keywords_line": keywords_line,
+        "image": image_line,
     }, body
 
 
@@ -125,18 +127,48 @@ def normalize_keywords_line(keywords_line: str, fallback_keyword: str) -> str:
 
     keywords_line = keywords_line.strip()
 
-    # لو كانت جاهزة كـ list
     if keywords_line.startswith("[") and keywords_line.endswith("]"):
         return keywords_line
 
-    # لو رجعت كنص عادي
     return f'["{fallback_keyword}"]'
 
 
-def normalize_article(article: str) -> str:
+def fetch_unsplash_image(keyword: str, slug: str) -> str:
+    IMAGES_DIR.mkdir(parents=True, exist_ok=True)
+
+    response = requests.get(
+        "https://api.unsplash.com/photos/random",
+        params={
+            "query": keyword,
+            "orientation": "landscape",
+            "client_id": UNSPLASH_KEY,
+        },
+        timeout=60,
+    )
+
+    if response.status_code != 200:
+        raise Exception(f"Unsplash error: {response.status_code} {response.text[:300]}")
+
+    data = response.json()
+    image_url = data["urls"]["regular"]
+
+    image_response = requests.get(image_url, stream=True, timeout=60)
+    if image_response.status_code != 200:
+        raise Exception("Failed to download image from Unsplash")
+
+    filename = f"{TODAY}-{slug}.jpg"
+    filepath = IMAGES_DIR / filename
+
+    with open(filepath, "wb") as f:
+        for chunk in image_response.iter_content(8192):
+            f.write(chunk)
+
+    return f"/images/{filename}"
+
+
+def normalize_article(article: str, image_path: str = "") -> str:
     article = extract_markdown_block(article)
 
-    # إزالة أي نص قبل أول frontmatter
     if "---" in article:
         article = article[article.find("---"):].strip()
 
@@ -148,16 +180,16 @@ def normalize_article(article: str) -> str:
     title = parsed["title"] or f"{KEYWORD} – Ratgeber und Tipps"
     description = parsed["description"] or f"Erfahren Sie mehr über {KEYWORD} auf {CONFIG['domain']}."
     keywords_line = normalize_keywords_line(parsed["keywords_line"], KEYWORD)
-
-    # تثبيت التاريخ بصيغة آمنة لهوغو
     date_value = TODAY
+
+    image_block = f'image: "{image_path}"\n' if image_path else ""
 
     clean = f"""---
 title: "{title}"
 date: "{date_value}"
 description: "{description}"
 keywords: {keywords_line}
----
+{image_block}---
 
 {body.strip()}
 """
@@ -206,7 +238,7 @@ Anforderungen:
 - Professioneller, vertrauenswürdiger Stil
 - Keine übertriebene Werbung
 - Das Keyword natürlich verwenden
-- Am Ende eine dezente Erwähnung, dass diese Domain für passende Kanzleien, Legal-Tech-Projekte oder Vermittlungsdienste interessant sein kann
+- Am Ende eine dezente Erwähnung, dass die Domain {CONFIG["domain"]} für passende Kanzleien, Legal-Tech-Projekte oder Vermittlungsdienste interessant sein kann
 
 Verwende dieses genaue Format:
 
@@ -279,9 +311,14 @@ def main():
 
             parsed, _ = parse_frontmatter(reviewed)
             title = parsed["title"] if parsed else f"artikel-{random.randint(1000, 9999)}"
+            slug = slugify(title) or f"artikel-{random.randint(1000, 9999)}"
+
+            image_path = fetch_unsplash_image(KEYWORD, slug)
+            reviewed = normalize_article(reviewed, image_path=image_path)
 
             saved_path = save_article(reviewed, title)
             print(f"Saved: {saved_path}")
+            print(f"Image: {image_path}")
             return
 
         except Exception as e:
