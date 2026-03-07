@@ -1,13 +1,171 @@
 {{ define "main" }}
-<article class="mw8 center ph3 ph4-ns pv4 lh-copy">
+<style>
+  .article-wrap {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 32px 18px 56px;
+    color: #111827;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+  }
 
-  <h1>{{ .Title }}</h1>
+  .article-header {
+    margin-bottom: 28px;
+  }
+
+  .article-label {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #e94560;
+    background: #fff1f4;
+    border-radius: 999px;
+    padding: 6px 10px;
+    margin-bottom: 14px;
+  }
+
+  .article-title {
+    font-size: 46px;
+    line-height: 1.12;
+    font-weight: 800;
+    margin: 0 0 14px;
+    color: #111827;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  .article-description {
+    font-size: 20px;
+    line-height: 1.7;
+    color: #4b5563;
+    margin: 0;
+  }
+
+  .article-image {
+    width: 100%;
+    display: block;
+    border-radius: 18px;
+    margin: 28px 0 34px;
+    object-fit: cover;
+    max-height: 460px;
+  }
+
+  .article-content {
+    font-size: 21px;
+    line-height: 1.9;
+    color: #1f2937;
+  }
+
+  .article-content h1,
+  .article-content h2,
+  .article-content h3,
+  .article-content h4 {
+    line-height: 1.2;
+    font-weight: 800;
+    color: #111827;
+    margin-top: 38px;
+    margin-bottom: 18px;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  .article-content h1 { font-size: 40px; }
+  .article-content h2 { font-size: 34px; }
+  .article-content h3 { font-size: 28px; }
+  .article-content h4 { font-size: 24px; }
+
+  .article-content p,
+  .article-content li,
+  .article-content blockquote {
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  .article-content p {
+    margin: 0 0 22px;
+  }
+
+  .article-content ul,
+  .article-content ol {
+    padding-left: 26px;
+    margin: 0 0 24px;
+  }
+
+  .article-content li {
+    margin-bottom: 12px;
+  }
+
+  .article-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 14px;
+  }
+
+  .article-content a {
+    color: #3b2ebf;
+    text-decoration: none;
+  }
+
+  .article-content a:hover {
+    text-decoration: underline;
+  }
+
+  @media (max-width: 768px) {
+    .article-wrap {
+      padding: 22px 16px 44px;
+    }
+
+    .article-title {
+      font-size: 28px;
+      line-height: 1.18;
+    }
+
+    .article-description {
+      font-size: 16px;
+      line-height: 1.7;
+    }
+
+    .article-image {
+      margin: 22px 0 28px;
+      border-radius: 14px;
+      max-height: 260px;
+    }
+
+    .article-content {
+      font-size: 18px;
+      line-height: 1.85;
+    }
+
+    .article-content h1 { font-size: 28px; }
+    .article-content h2 { font-size: 24px; }
+    .article-content h3 { font-size: 21px; }
+    .article-content h4 { font-size: 19px; }
+
+    .article-content ul,
+    .article-content ol {
+      padding-left: 22px;
+    }
+  }
+</style>
+
+<article class="article-wrap">
+  <header class="article-header">
+    <div class="article-label">Artikel</div>
+    <h1 class="article-title">{{ .Title }}</h1>
+
+    {{ if .Description }}
+    <p class="article-description">{{ .Description }}</p>
+    {{ end }}
+  </header>
 
   {{ if .Params.image }}
-  <img src="{{ .Params.image }}" alt="{{ .Title }}" style="width:100%;max-width:900px;border-radius:12px;margin:24px 0;">
+  <img class="article-image" src="{{ .Params.image }}" alt="{{ .Title }}">
   {{ end }}
 
-  {{ .Content }}
-
+  <div class="article-content">
+    {{ .Content }}
+  </div>
 </article>
 {{ end }}
