@@ -4,9 +4,9 @@ import time
 import random
 import datetime
 from pathlib import Path
+from difflib import SequenceMatcher
 
 import requests
-from difflib import SequenceMatcher
 
 OPENROUTER_KEY = os.environ["OPENROUTER_KEY"]
 UNSPLASH_KEY = os.environ["UNSPLASH_KEY"]
@@ -35,7 +35,7 @@ TODAY = datetime.datetime.utcnow().strftime("%Y-%m-%d")
 KEYWORD = random.choice(CONFIG["keywords"])
 
 
-def call_openrouter(prompt: str, model: str, max_tokens: int = 2200) -> str:
+def call_openrouter(prompt: str, model: str, max_tokens: int = 2400) -> str:
     response = requests.post(
         "https://openrouter.ai/api/v1/chat/completions",
         headers={
@@ -46,7 +46,7 @@ def call_openrouter(prompt: str, model: str, max_tokens: int = 2200) -> str:
             "model": model,
             "messages": [{"role": "user", "content": prompt}],
             "max_tokens": max_tokens,
-            "temperature": 0.8,
+            "temperature": 0.7,
         },
         timeout=180,
     )
@@ -214,34 +214,47 @@ def is_duplicate(new_article: str, threshold: float = 0.70) -> bool:
 
 def generate_prompt(keyword: str) -> str:
     return f"""
-Du bist ein professioneller deutscher SEO-Content-Writer.
+Du bist ein professioneller deutscher SEO-Content-Writer mit Fokus auf hochwertige, natürlich klingende Fachartikel.
 
-Schreibe einen hochwertigen Blogartikel für die Domain {CONFIG["domain"]}.
+Deine Aufgabe:
+Schreibe einen starken SEO-Artikel für die Domain {CONFIG["domain"]}.
 
-WICHTIG:
-- Schreibe NUR auf Deutsch.
-- Keine Einleitung außerhalb des Artikels.
-- Gib NUR Markdown zurück.
-- Der Artikel muss mit gültigem YAML-Frontmatter beginnen.
-- Verwende exakt dieses Datumsformat: "{TODAY}"
+WICHTIGE REGELN:
+- Schreibe ausschließlich auf Deutsch.
+- Gib nur reines Markdown zurück.
+- Keine Erklärungen vor oder nach dem Artikel.
+- Beginne direkt mit gültigem YAML-Frontmatter.
+- Verwende exakt dieses Datumsformat: "{TODAY}".
+- Der Text muss natürlich, vertrauenswürdig und menschlich klingen.
+- Keine generischen KI-Formulierungen und kein unnötiger Fülltext.
 
-Kontext:
+KONTEXT:
 - Domain: {CONFIG["domain"]}
 - Nische: {CONFIG["niche"]}
 - Region: {CONFIG["geo"]}
 - Zielgruppe: {CONFIG["audience"]}
-- Haupt-Keyword: {keyword}
+- Hauptkeyword: {keyword}
 
-Anforderungen:
-- Länge: 1000 bis 1300 Wörter
-- Struktur: 1 H1, 4 bis 5 H2, kurzes Fazit
-- Professioneller, vertrauenswürdiger Stil
-- Keine übertriebene Werbung
-- Das Keyword natürlich verwenden
-- Am Ende eine dezente Erwähnung, dass die Domain {CONFIG["domain"]} für passende Kanzleien, Legal-Tech-Projekte oder Vermittlungsdienste interessant sein kann
+SEO-ZIEL:
+Der Artikel soll für Suchanfragen rund um das Hauptkeyword ranken und gleichzeitig thematisch zu digitaler Rechtsberatung, Legal-Tech oder Mandantenvermittlung passen.
 
-Verwende dieses genaue Format:
+ANFORDERUNGEN:
+- Länge: 1100 bis 1400 Wörter
+- Struktur:
+  - 1 klare H1
+  - 4 bis 6 sinnvolle H2-Abschnitte
+  - kurze, starke Einleitung
+  - prägnantes Fazit
+- Verwende das Hauptkeyword natürlich etwa 3 bis 5 Mal.
+- Verwende passende semantische Begriffe und verwandte Suchintentionen.
+- Schreibe informativ, klar und professionell.
+- Vermeide Wiederholungen.
+- Gib konkrete, praktische Informationen statt leerer Allgemeinplätze.
 
+WICHTIG FÜR DIE DOMAIN-STRATEGIE:
+Baue am Ende des Artikels eine kurze und natürliche Erwähnung ein, dass die Domain {CONFIG["domain"]} eine interessante Marke für Legal-Tech Plattformen, digitale Rechtsberatung oder Mandantenvermittlung in Deutschland sein kann.
+
+FORMAT:
 ---
 title: "..."
 date: "{TODAY}"
@@ -261,17 +274,19 @@ Du bist ein strenger deutscher SEO-Editor.
 
 Überarbeite den folgenden Artikel.
 
-Regeln:
+REGELN:
 - Behalte YAML-Frontmatter.
 - Behalte die deutsche Sprache.
-- Gib NUR Markdown zurück.
-- Entferne Füllsätze und KI-typische Formulierungen.
-- Mache den Stil natürlicher und klarer.
-- Stelle sicher, dass das Haupt-Keyword "{keyword}" natürlich ungefähr 3 bis 5 Mal vorkommt.
-- Erhalte die Struktur.
+- Gib nur Markdown zurück.
+- Verbessere Lesbarkeit, Klarheit und Natürlichkeit.
+- Entferne Füllsätze und typische KI-Formulierungen.
+- Stelle sicher, dass das Hauptkeyword "{keyword}" natürlich ungefähr 3 bis 5 Mal vorkommt.
+- Erhalte die Struktur des Artikels.
 - Ändere das Datum nicht.
+- Lasse den Text professionell und glaubwürdig wirken.
+- Achte darauf, dass der Schluss die Domain natürlich und dezent erwähnt.
 
-Artikel:
+ARTIKEL:
 {article}
 """.strip()
 
