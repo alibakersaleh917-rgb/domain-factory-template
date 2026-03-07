@@ -1,16 +1,21 @@
 {{ define "main" }}
 <style>
+  .article-shell {
+    background: #ffffff;
+    min-height: 100vh;
+  }
+
   .article-wrap {
     max-width: 860px;
     margin: 0 auto;
-    padding: 34px 18px 60px;
+    padding: 42px 18px 64px;
     color: #111827;
     overflow-wrap: break-word;
     word-wrap: break-word;
   }
 
   .article-header {
-    margin-bottom: 28px;
+    margin-bottom: 26px;
   }
 
   .article-label {
@@ -27,8 +32,8 @@
   }
 
   .article-title {
-    font-size: 46px;
-    line-height: 1.12;
+    font-size: 34px;
+    line-height: 1.18;
     font-weight: 900;
     margin: 0 0 14px;
     color: #111827;
@@ -37,7 +42,7 @@
   }
 
   .article-description {
-    font-size: 20px;
+    font-size: 18px;
     line-height: 1.75;
     color: #4b5563;
     margin: 0;
@@ -47,13 +52,13 @@
     width: 100%;
     display: block;
     border-radius: 18px;
-    margin: 30px 0 34px;
+    margin: 28px 0 32px;
     object-fit: cover;
-    max-height: 460px;
+    max-height: 420px;
   }
 
   .article-content {
-    font-size: 21px;
+    font-size: 20px;
     line-height: 1.9;
     color: #1f2937;
   }
@@ -62,19 +67,19 @@
   .article-content h2,
   .article-content h3,
   .article-content h4 {
-    line-height: 1.2;
+    line-height: 1.22;
     font-weight: 900;
     color: #111827;
-    margin-top: 38px;
-    margin-bottom: 18px;
+    margin-top: 34px;
+    margin-bottom: 16px;
     overflow-wrap: break-word;
     word-break: break-word;
   }
 
-  .article-content h1 { font-size: 40px; }
-  .article-content h2 { font-size: 34px; }
-  .article-content h3 { font-size: 28px; }
-  .article-content h4 { font-size: 24px; }
+  .article-content h1 { font-size: 32px; }
+  .article-content h2 { font-size: 28px; }
+  .article-content h3 { font-size: 24px; }
+  .article-content h4 { font-size: 20px; }
 
   .article-content p,
   .article-content li,
@@ -84,17 +89,17 @@
   }
 
   .article-content p {
-    margin: 0 0 22px;
+    margin: 0 0 20px;
   }
 
   .article-content ul,
   .article-content ol {
-    padding-left: 26px;
+    padding-left: 24px;
     margin: 0 0 24px;
   }
 
   .article-content li {
-    margin-bottom: 12px;
+    margin-bottom: 10px;
   }
 
   .article-content img {
@@ -113,8 +118,8 @@
   }
 
   .article-cta {
-    margin-top: 42px;
-    padding: 28px;
+    margin-top: 40px;
+    padding: 26px;
     border-radius: 20px;
     background: linear-gradient(135deg, #0f172a 0%, #16213e 55%, #0f3460 100%);
     color: white;
@@ -123,7 +128,7 @@
 
   .article-cta h3 {
     margin: 0 0 10px;
-    font-size: 26px;
+    font-size: 24px;
     line-height: 1.2;
     color: white;
   }
@@ -176,7 +181,7 @@
     }
 
     .article-title {
-      font-size: 30px;
+      font-size: 28px;
       line-height: 1.18;
     }
 
@@ -222,40 +227,42 @@
   }
 </style>
 
-<article class="article-wrap">
-  <header class="article-header">
-    <div class="article-label">Artikel</div>
-    <h1 class="article-title">{{ .Title }}</h1>
+<div class="article-shell">
+  <article class="article-wrap">
+    <header class="article-header">
+      <div class="article-label">Artikel</div>
+      <h1 class="article-title">{{ .Title }}</h1>
 
-    {{ if .Description }}
-    <p class="article-description">{{ .Description }}</p>
+      {{ if .Description }}
+      <p class="article-description">{{ .Description }}</p>
+      {{ end }}
+    </header>
+
+    {{ if .Params.image }}
+    <img class="article-image" src="{{ .Params.image }}" alt="{{ .Title }}">
     {{ end }}
-  </header>
 
-  {{ if .Params.image }}
-  <img class="article-image" src="{{ .Params.image }}" alt="{{ .Title }}">
-  {{ end }}
-
-  <div class="article-content">
-    {{ .Content }}
-  </div>
-
-  <div class="article-cta">
-    <h3>Interesse an Anwaltsagent.de?</h3>
-    <p>
-      Diese Domain kann eine starke Marke für Legal-Tech, digitale Rechtsberatung
-      oder Mandantenvermittlung in Deutschland sein.
-    </p>
-
-    <div class="article-cta-buttons">
-      <a href="https://sedo.com/search/details/?partnerid=324561&language=ar&domain=anwaltsagent.de&origin=sales_lander_15&utm_medium=Parking&utm_campaign=offerpage" class="article-cta-buy">
-        Über Sedo kaufen
-      </a>
-
-      <a href="/#kontakt" class="article-cta-contact">
-        Direkt kontaktieren
-      </a>
+    <div class="article-content">
+      {{ .Content }}
     </div>
-  </div>
-</article>
+
+    <div class="article-cta">
+      <h3>Interesse an Anwaltsagent.de?</h3>
+      <p>
+        Diese Domain kann eine starke Marke für Legal-Tech, digitale Rechtsberatung
+        oder Mandantenvermittlung in Deutschland sein.
+      </p>
+
+      <div class="article-cta-buttons">
+        <a href="https://sedo.com/search/details/?partnerid=324561&language=ar&domain=anwaltsagent.de&origin=sales_lander_15&utm_medium=Parking&utm_campaign=offerpage" class="article-cta-buy">
+          Über Sedo kaufen
+        </a>
+
+        <a href="/#kontakt" class="article-cta-contact">
+          Direkt kontaktieren
+        </a>
+      </div>
+    </div>
+  </article>
+</div>
 {{ end }}
