@@ -798,8 +798,9 @@
       </p>
 
       <div class="post-list">
-        {{ range first 5 .Site.RegularPages }}
-        <a href="{{ .Permalink }}" class="post-card">
+{{ range first 3 .Site.RegularPages }}
+        
+      <a href="{{ .Permalink }}" class="post-card">
           {{ if .Params.image }}
           <div class="post-media">
             <img src="{{ .Params.image }}" alt="{{ .Title }}">
