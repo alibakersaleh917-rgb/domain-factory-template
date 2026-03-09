@@ -2,7 +2,7 @@
   "ctx" .
   "title" (printf "%s | %s" .Site.Data.domain.seo.archive_title .Site.Data.domain.brand_name)
   "description" .Site.Data.domain.seo.archive_description
-  "stylePartial" "styles/archive.css"
+  "stylePartial" "styles/archive.css.html"
 ) }}
 <body>
   {{ $archivePosts := where .Site.RegularPages "Section" "posts" }}

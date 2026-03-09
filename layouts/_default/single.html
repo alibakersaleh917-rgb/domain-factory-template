@@ -2,7 +2,7 @@
   "ctx" .
   "title" (printf "%s | %s" .Title .Site.Data.domain.brand_name)
   "description" (.Description | default .Site.Data.domain.seo.article_default_description)
-  "stylePartial" "styles/single.css"
+  "stylePartial" "styles/single.css.html"
 ) }}
 <body>
   {{ partial "navbar.html" (dict "ctx" . "variant" "article") }}
