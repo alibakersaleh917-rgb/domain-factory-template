@@ -556,13 +556,14 @@
 
       <div class="post-grid">
         {{ range .Site.RegularPages.ByDate.Reverse }}
-        <a href="{{ .Permalink }}" class="post-card" data-search="{{ lower .Title }} {{ lower .Description }} {{ lower (delimit .Params.keywords " ") }}">
+        {{ $post := . }}
+        <a href="{{ $post.Permalink }}" class="post-card" data-search="{{ lower $post.Title }} {{ lower ($post.Description | default "") }} {{ lower (delimit ($post.Params.keywords | default (slice)) " ") }}">
           <div class="post-media">
-            {{ with .Params.image }}<img src="{{ . }}" alt="{{ $.Title }}" />{{ end }}
+            {{ with $post.Params.image }}<img src="{{ . }}" alt="{{ $post.Title }}" />{{ end }}
           </div>
           <div class="post-body">
-            <h3>{{ .Title }}</h3>
-            <p>{{ if .Description }}{{ .Description }}{{ else }}Zum vollständigen Beitrag wechseln.{{ end }}</p>
+            <h3>{{ $post.Title }}</h3>
+            <p>{{ if $post.Description }}{{ $post.Description }}{{ else }}Zum vollständigen Beitrag wechseln.{{ end }}</p>
             <span>Artikel öffnen →</span>
           </div>
         </a>
