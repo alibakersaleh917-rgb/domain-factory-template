@@ -1,913 +1,633 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Anwaltsagent.de — Premium-Domain für Legal-Tech</title>
-  <meta name="description" content="Anwaltsagent.de ist eine Premium-Domain für Legal-Tech, Anwaltsvermittlung und digitale Rechtsberatung in Deutschland.">
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Anwaltsagent.de — Premium Legal-Tech Domain</title>
+  <meta name="description" content="Anwaltsagent.de: Premium-Domain für Legal-Tech, digitale Rechtsberatung und Mandantengewinnung in Deutschland." />
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
     :root {
-      --bg: #f5f7fb;
-      --surface: #ffffff;
-      --surface-soft: #f8fafc;
-      --text: #111827;
-      --muted: #6b7280;
-      --line: #e5e7eb;
-      --brand: #e94560;
-      --brand-dark: #d73753;
-      --hero-a: #0f172a;
-      --hero-b: #16213e;
-      --hero-c: #0f3460;
-      --shadow: 0 14px 34px rgba(15, 23, 42, 0.07);
-      --shadow-hover: 0 20px 42px rgba(15, 23, 42, 0.12);
+      --bg: #070b14;
+      --bg-soft: #0e1527;
+      --card: rgba(16, 24, 43, 0.75);
+      --card-strong: rgba(20, 30, 52, 0.95);
+      --line: rgba(170, 190, 255, 0.2);
+      --txt: #eef3ff;
+      --muted: #9fb0d6;
+      --brand: #7c8dff;
+      --brand-2: #39c2ff;
+      --accent: #ff6ea8;
+      --ok: #4ade80;
       --radius: 18px;
-      --container: 1160px;
+      --shadow: 0 24px 70px rgba(0, 0, 0, 0.45);
+      --container: 1180px;
     }
 
-    html {
-      scroll-behavior: smooth;
-    }
-
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.6;
+      font-family: Inter, ui-sans-serif, -apple-system, Segoe UI, Roboto, sans-serif;
+      color: var(--txt);
+      background:
+        radial-gradient(1200px 700px at 15% -20%, rgba(124,141,255,0.25), transparent 60%),
+        radial-gradient(900px 520px at 95% 0%, rgba(57,194,255,0.18), transparent 62%),
+        var(--bg);
+      line-height: 1.65;
+      overflow-x: hidden;
     }
 
-    a {
-      text-decoration: none;
-      color: inherit;
-    }
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; display: block; }
+    .container { width: min(92%, var(--container)); margin: 0 auto; }
 
-    img {
-      max-width: 100%;
-      display: block;
-    }
-
-    .container {
-      max-width: var(--container);
-      margin: 0 auto;
-      padding: 0 20px;
-    }
-
-    .section {
-      padding: 84px 0;
-    }
-
-    .section-title {
-      text-align: center;
-      font-size: 36px;
-      font-weight: 800;
-      line-height: 1.15;
-      margin-bottom: 16px;
-      color: var(--text);
-    }
-
-    .section-subtitle {
-      text-align: center;
-      max-width: 760px;
-      margin: 0 auto 48px;
-      color: var(--muted);
-      font-size: 17px;
-      line-height: 1.75;
-    }
-
-    header {
-      background: rgba(15, 23, 42, 0.94);
-      border-bottom: 1px solid rgba(255,255,255,0.06);
+    .header {
       position: sticky;
       top: 0;
-      z-index: 30;
-      backdrop-filter: blur(10px);
+      z-index: 90;
+      backdrop-filter: blur(14px);
+      background: linear-gradient(180deg, rgba(7,11,20,0.85), rgba(7,11,20,0.58));
+      border-bottom: 1px solid var(--line);
     }
 
     .topbar {
+      min-height: 74px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      min-height: 70px;
     }
 
     .brand {
-      color: #fff;
-      font-size: 21px;
-      font-weight: 800;
-      letter-spacing: -0.02em;
+      font-weight: 900;
+      font-size: 22px;
+      letter-spacing: -0.025em;
+    }
+
+    .brand span {
+      background: linear-gradient(90deg, var(--brand), var(--brand-2));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
     }
 
     .nav {
       display: flex;
-      gap: 22px;
       align-items: center;
-    }
-
-    .nav a {
-      color: #cbd5e1;
+      gap: 22px;
+      color: var(--muted);
       font-size: 15px;
       font-weight: 600;
-      transition: 0.2s ease;
     }
 
-    .nav a:hover {
-      color: white;
-    }
+    .nav a:hover { color: #fff; }
 
-    .nav-cta {
-      display: inline-block;
-      padding: 11px 16px;
-      border-radius: 10px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.12);
-    }
-
-    .hero {
+    .pill-btn {
       position: relative;
       overflow: hidden;
-      background:
-        radial-gradient(circle at top left, rgba(233,69,96,0.18), transparent 28%),
-        radial-gradient(circle at top right, rgba(255,255,255,0.08), transparent 22%),
-        linear-gradient(135deg, var(--hero-a) 0%, var(--hero-b) 54%, var(--hero-c) 100%);
-      color: white;
-      padding: 112px 0 96px;
+      background: linear-gradient(135deg, var(--brand), var(--brand-2));
+      color: #fff;
+      padding: 11px 16px;
+      border-radius: 999px;
+      font-weight: 800;
+      border: 1px solid rgba(255,255,255,0.25);
+      box-shadow: 0 10px 30px rgba(57,194,255,0.25);
     }
 
-    .hero::after {
+    .pill-btn::after {
       content: "";
       position: absolute;
-      inset: auto auto 0 0;
-      width: 100%;
-      height: 120px;
-      background: linear-gradient(to top, rgba(255,255,255,0.03), transparent);
+      inset: -2px;
+      background: linear-gradient(110deg, transparent 20%, rgba(255,255,255,0.6) 50%, transparent 80%);
+      transform: translateX(-140%);
+      animation: beam 3.2s linear infinite;
       pointer-events: none;
+    }
+
+    @keyframes beam {
+      to { transform: translateX(140%); }
+    }
+
+    section { padding: 88px 0; }
+
+    .hero {
+      padding-top: 90px;
+      position: relative;
+      isolation: isolate;
     }
 
     .hero-grid {
       display: grid;
-      grid-template-columns: 1.2fr 0.8fr;
-      gap: 40px;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 30px;
       align-items: center;
-      position: relative;
-      z-index: 1;
     }
 
     .eyebrow {
-      display: inline-block;
-      font-size: 12px;
-      font-weight: 800;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: #ffd7de;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.1);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 13px;
       border-radius: 999px;
-      padding: 8px 12px;
-      margin-bottom: 20px;
+      border: 1px solid var(--line);
+      color: #cfd9ff;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      margin-bottom: 18px;
+      background: rgba(124,141,255,0.13);
+      font-weight: 700;
     }
 
     .hero h1 {
-      font-size: 68px;
-      line-height: 1.02;
-      font-weight: 900;
+      font-size: clamp(42px, 7vw, 74px);
+      line-height: 0.98;
       letter-spacing: -0.04em;
-      margin-bottom: 22px;
+      margin-bottom: 20px;
+      max-width: 16ch;
     }
 
-    .hero h1 span {
-      color: var(--brand);
+    .hero h1 strong {
+      background: linear-gradient(90deg, #fff, #a9deff 45%, #c9b7ff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
     }
 
     .hero p {
-      font-size: 22px;
-      line-height: 1.75;
-      color: #dbe4ff;
-      max-width: 760px;
-      margin-bottom: 28px;
+      color: var(--muted);
+      font-size: 19px;
+      max-width: 62ch;
+      margin-bottom: 24px;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .ghost-btn {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.03);
+      border-radius: 999px;
+      padding: 11px 16px;
+      font-weight: 700;
+      color: #d4ddf7;
     }
 
     .hero-points {
       display: flex;
       flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 6px;
+      gap: 10px;
     }
 
     .hero-point {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 14px;
-      color: #dbe4ff;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 999px;
-      padding: 10px 14px;
-    }
-
-    .trust-strip {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 22px;
-    }
-
-    .trust-chip {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 10px 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.02);
+      padding: 8px 12px;
       border-radius: 999px;
       font-size: 13px;
-      font-weight: 700;
-      color: #e9efff;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.08);
+      color: #c9d5f7;
     }
 
     .hero-card {
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 22px;
-      padding: 28px;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 18px 40px rgba(0,0,0,0.15);
+      position: relative;
+      border-radius: 24px;
+      padding: 24px;
+      background: linear-gradient(155deg, rgba(124,141,255,0.28), rgba(57,194,255,0.12));
+      border: 1px solid rgba(200,220,255,0.28);
+      box-shadow: var(--shadow);
+      overflow: hidden;
     }
 
-    .hero-card-label {
+    .hero-card::before {
+      content: "";
+      position: absolute;
+      inset: auto -30% -35% -30%;
+      height: 220px;
+      background: radial-gradient(circle, rgba(255,110,168,0.35), transparent 70%);
+      filter: blur(20px);
+      pointer-events: none;
+    }
+
+    .mini-label {
       font-size: 12px;
+      color: #f7e3ff;
       text-transform: uppercase;
-      letter-spacing: 0.12em;
+      letter-spacing: .09em;
       font-weight: 800;
-      color: #ffc9d2;
       margin-bottom: 12px;
     }
 
     .hero-card h2 {
-      font-size: 28px;
-      line-height: 1.2;
-      font-weight: 800;
-      margin-bottom: 16px;
+      font-size: 30px;
+      line-height: 1.1;
+      margin-bottom: 12px;
     }
 
     .hero-card p {
-      font-size: 16px;
-      line-height: 1.8;
-      color: #dbe4ff;
-      margin-bottom: 22px;
-    }
-
-    .hero-card-list {
-      list-style: none;
-      display: grid;
-      gap: 12px;
-    }
-
-    .hero-card-list li {
-      color: #edf2ff;
+      color: #deebff;
+      margin-bottom: 16px;
       font-size: 15px;
-      line-height: 1.7;
-      padding-left: 18px;
-      position: relative;
     }
 
-    .hero-card-list li::before {
-      content: "•";
-      position: absolute;
-      left: 0;
-      color: #ff9bab;
-      font-weight: 700;
-    }
-
-    .value {
-      background: white;
-    }
-
-    .cards {
+    .stats {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 24px;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 10px;
+    }
+
+    .stat {
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(8,12,22,0.4);
+      border-radius: 14px;
+      padding: 11px;
+    }
+
+    .stat strong { display: block; font-size: 22px; }
+    .stat span { color: #d3defb; font-size: 12px; }
+
+    .logos {
+      margin-top: 26px;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      padding: 14px 0;
+      overflow: hidden;
+      mask-image: linear-gradient(90deg, transparent, #fff 12%, #fff 88%, transparent);
+    }
+
+    .logos-track {
+      display: flex;
+      gap: 34px;
+      color: #aebde3;
+      white-space: nowrap;
+      animation: marquee 16s linear infinite;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      font-size: 13px;
+    }
+
+    @keyframes marquee {
+      to { transform: translateX(-50%); }
+    }
+
+    .section-head {
+      margin-bottom: 20px;
+      max-width: 800px;
+    }
+
+    .section-head h2 {
+      font-size: clamp(31px, 5vw, 50px);
+      line-height: 1.06;
+      margin-bottom: 10px;
+      letter-spacing: -0.03em;
+    }
+
+    .section-head p { color: var(--muted); font-size: 18px; }
+
+    .bento {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0,1fr));
+      gap: 16px;
     }
 
     .card {
-      background: var(--surface-soft);
       border: 1px solid var(--line);
-      border-top: 4px solid var(--brand);
       border-radius: var(--radius);
-      padding: 30px;
-      box-shadow: var(--shadow);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      background: var(--card);
+      backdrop-filter: blur(8px);
+      padding: 20px;
+      box-shadow: 0 12px 34px rgba(0,0,0,0.24);
+      transition: transform .3s ease, border-color .3s ease;
     }
 
     .card:hover {
-      transform: translateY(-3px);
-      box-shadow: var(--shadow-hover);
+      transform: translateY(-5px);
+      border-color: rgba(190,205,255,0.44);
     }
 
-    .card h3 {
-      font-size: 19px;
-      margin-bottom: 12px;
-      line-height: 1.25;
-      color: var(--text);
-    }
+    .span-2 { grid-column: span 2; }
+    .span-3 { grid-column: span 3; }
 
-    .card p {
-      color: #4b5563;
-      font-size: 15px;
-      line-height: 1.8;
-    }
+    .card h3 { margin-bottom: 10px; font-size: 23px; }
+    .card p { color: var(--muted); font-size: 15px; }
 
-    .posts {
-      background: #eef2f7;
-    }
-
-    .post-list {
+    .timeline {
+      margin-top: 14px;
       display: grid;
-      gap: 22px;
-      max-width: 980px;
-      margin: 0 auto;
+      gap: 10px;
+    }
+
+    .step {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255,255,255,0.02);
+      padding: 12px;
+    }
+
+    .step strong { color: #fff; display: block; margin-bottom: 4px; }
+    .step span { color: #b7c5e8; font-size: 14px; }
+
+    .search-wrap {
+      border: 1px solid var(--line);
+      background: var(--card-strong);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      margin: 20px 0 14px;
+    }
+
+    .search-wrap input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #fff;
+      font-size: 16px;
+    }
+
+    .post-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 14px;
     }
 
     .post-card {
-      position: relative;
-      display: grid;
-      grid-template-columns: 240px 1fr;
-      background: white;
-      border: 1px solid rgba(229, 231, 235, 0.95);
-      border-radius: 24px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
       overflow: hidden;
-      box-shadow: var(--shadow);
-      transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
-    }
-
-    .post-card::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      padding: 1px;
-      background: linear-gradient(135deg, rgba(233,69,96,0.22), rgba(37,99,235,0.10), transparent 55%);
-      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      -webkit-mask-composite: xor;
-      mask-composite: exclude;
-      pointer-events: none;
+      display: grid;
+      grid-template-columns: 170px 1fr;
+      background: var(--card);
+      transition: transform .25s ease, border-color .25s ease;
     }
 
     .post-card:hover {
       transform: translateY(-4px);
-      box-shadow: var(--shadow-hover);
-      border-color: rgba(233, 69, 96, 0.18);
+      border-color: rgba(194,207,255,0.45);
     }
 
     .post-media {
-      background: #dbe3ef;
-      min-height: 190px;
-      overflow: hidden;
+      background: linear-gradient(160deg, #1a2948, #121f39);
+      min-height: 100%;
     }
 
-    .post-media img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform 0.35s ease;
+    .post-media img { width: 100%; height: 100%; object-fit: cover; }
+    .post-body { padding: 14px; }
+    .post-body h3 { font-size: 19px; margin-bottom: 6px; }
+    .post-body p { color: var(--muted); font-size: 14px; margin-bottom: 8px; }
+    .post-body span { color: #dce6ff; font-size: 13px; font-weight: 700; }
+
+    .empty {
+      border: 1px dashed var(--line);
+      border-radius: 14px;
+      padding: 16px;
+      color: #b8c7ea;
+      background: rgba(255,255,255,0.02);
     }
 
-    .post-card:hover .post-media img {
-      transform: scale(1.04);
-    }
-
-    .post-content {
-      padding: 24px 24px 22px;
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-
-    .post-badge {
-      display: inline-block;
-      width: fit-content;
-      font-size: 12px;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--brand);
-      background: #fff1f4;
-      border-radius: 999px;
-      padding: 7px 11px;
-      margin-bottom: 14px;
-    }
-
-    .post-title {
-      font-size: 24px;
-      line-height: 1.3;
-      font-weight: 800;
-      color: var(--text);
-      margin-bottom: 10px;
-      overflow-wrap: break-word;
-      word-break: break-word;
-    }
-
-    .post-card:hover .post-title {
-      color: var(--brand);
-    }
-
-    .post-subtext {
-      color: var(--muted);
-      font-size: 15px;
-      line-height: 1.75;
-      margin-bottom: 18px;
-      overflow-wrap: break-word;
-      word-break: break-word;
-    }
-
-    .post-action {
-      color: #2563eb;
-      font-size: 14px;
-      font-weight: 700;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .contact {
-      background: white;
-    }
-
-    .contact-box {
-      max-width: 860px;
-      margin: 0 auto;
-      background: var(--surface-soft);
+    .cta {
       border: 1px solid var(--line);
-      border-radius: 22px;
-      padding: 34px;
+      background: linear-gradient(140deg, rgba(124,141,255,0.18), rgba(255,110,168,0.14));
+      border-radius: 24px;
+      padding: 28px;
       box-shadow: var(--shadow);
     }
 
-    .contact-intro {
-      text-align: center;
-      color: #4b5563;
-      margin-bottom: 28px;
+    .cta h2 {
+      font-size: clamp(32px, 5vw, 52px);
+      letter-spacing: -0.03em;
+      line-height: 1.05;
+      margin-bottom: 12px;
+    }
+
+    .cta p {
+      color: #d6e3ff;
+      max-width: 760px;
+      margin-bottom: 18px;
       font-size: 17px;
-      line-height: 1.8;
     }
 
-    .contact-list {
-      list-style: none;
-      display: grid;
-      gap: 16px;
-    }
-
-    .contact-item {
-      background: white;
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      padding: 20px 22px;
-    }
-
-    .contact-item strong {
-      display: block;
-      font-size: 13px;
-      color: var(--muted);
-      margin-bottom: 7px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-    }
-
-    .contact-item a,
-    .contact-item span {
-      color: var(--text);
-      font-size: 17px;
-      font-weight: 700;
-      word-break: break-word;
-    }
-
-    .contact-item a:hover {
-      color: var(--brand);
-    }
-
-    .cta-bottom {
-      background:
-        radial-gradient(circle at top left, rgba(233,69,96,0.13), transparent 24%),
-        linear-gradient(135deg, #0f172a 0%, #16213e 58%, #0f3460 100%);
-      color: white;
-      padding: 84px 0;
-    }
-
-    .cta-panel {
-      max-width: 980px;
-      margin: 0 auto;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 26px;
-      padding: 40px 32px;
-      box-shadow: 0 18px 40px rgba(0,0,0,0.18);
-      text-align: center;
-    }
-
-    .cta-panel h2 {
-      font-size: 38px;
-      line-height: 1.15;
-      font-weight: 900;
-      margin-bottom: 14px;
-    }
-
-    .cta-panel p {
-      max-width: 780px;
-      margin: 0 auto 28px;
-      color: #dbe4ff;
-      font-size: 18px;
-      line-height: 1.8;
-    }
-
-    .cta-buttons {
-      display: flex;
-      gap: 16px;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-
-    .cta-buy,
-    .cta-contact {
-      display: inline-block;
-      padding: 16px 26px;
-      border-radius: 12px;
-      font-size: 16px;
-      font-weight: 800;
-      transition: 0.2s ease;
-    }
-
-    .cta-buy {
-      background: var(--brand);
-      color: white;
-      box-shadow: 0 10px 25px rgba(233, 69, 96, 0.26);
-    }
-
-    .cta-buy:hover {
-      background: var(--brand-dark);
-      transform: translateY(-2px);
-    }
-
-    .cta-contact {
-      border: 2px solid rgba(255,255,255,0.24);
-      color: white;
-      background: transparent;
-    }
-
-    .cta-contact:hover {
-      border-color: white;
-      transform: translateY(-2px);
-    }
-
-    .mobile-sticky-cta {
-      display: none;
-    }
+    .cta-actions { display: flex; gap: 12px; flex-wrap: wrap; }
 
     footer {
-      background: #0b1220;
-      color: #cbd5e1;
+      border-top: 1px solid var(--line);
+      color: #9fb0d6;
       text-align: center;
-      padding: 24px;
+      padding: 18px 0;
       font-size: 14px;
     }
 
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px) scale(.985);
+      transition: .7s ease;
+    }
+
+    .reveal.in {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    .hidden { display: none !important; }
+
     @media (max-width: 980px) {
-      .hero-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .cards {
-        grid-template-columns: 1fr;
-      }
-
-      .hero h1 {
-        font-size: 52px;
-      }
+      .hero-grid,
+      .post-grid { grid-template-columns: 1fr; }
+      .bento { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .span-2, .span-3 { grid-column: span 2; }
+      .post-card { grid-template-columns: 1fr; }
+      .post-media { height: 180px; }
+      .nav a:not(.pill-btn) { display: none; }
     }
 
-    @media (max-width: 768px) {
-      .topbar {
-        min-height: 64px;
-      }
-
-      .nav {
-        display: none;
-      }
-
-      .hero {
-        padding: 88px 0 74px;
-      }
-
-      .hero h1 {
-        font-size: 40px;
-      }
-
-      .hero p {
-        font-size: 18px;
-      }
-
-      .section {
-        padding: 66px 0;
-      }
-
-      .section-title {
-        font-size: 30px;
-      }
-
-      .post-card {
-        grid-template-columns: 1fr;
-      }
-
-      .post-media {
-        min-height: 210px;
-      }
-
-      .post-title {
-        font-size: 21px;
-      }
-
-      .cta-panel {
-        padding: 30px 20px;
-      }
-
-      .cta-panel h2 {
-        font-size: 30px;
-      }
-
-      .cta-panel p {
-        font-size: 16px;
-      }
-
-      .mobile-sticky-cta {
-        display: flex;
-        position: fixed;
-        left: 12px;
-        right: 12px;
-        bottom: 12px;
-        z-index: 50;
-        gap: 10px;
-        padding: 10px;
-        border-radius: 16px;
-        background: rgba(15, 23, 42, 0.94);
-        backdrop-filter: blur(12px);
-        box-shadow: 0 18px 34px rgba(0,0,0,0.22);
-      }
-
-      .mobile-sticky-cta a {
-        flex: 1;
-        text-align: center;
-        padding: 13px 12px;
-        border-radius: 12px;
-        font-size: 14px;
-        font-weight: 800;
-      }
-
-      .mobile-sticky-buy {
-        background: var(--brand);
-        color: white;
-      }
-
-      .mobile-sticky-contact {
-        background: rgba(255,255,255,0.08);
-        color: white;
-        border: 1px solid rgba(255,255,255,0.14);
-      }
-
-      footer {
-        padding-bottom: 92px;
-      }
-    }
-
-    @media (max-width: 640px) {
-      .hero h1 {
-        font-size: 34px;
-      }
-
-      .hero p {
-        font-size: 17px;
-      }
-
-      .section-title {
-        font-size: 27px;
-      }
-
-      .cta-buy,
-      .cta-contact {
-        width: 100%;
-        max-width: 340px;
-      }
-
-      .contact-box {
-        padding: 24px 18px;
-      }
-
-      .post-content {
-        padding: 18px;
-      }
-
-      .post-title {
-        font-size: 19px;
-      }
+    @media (max-width: 620px) {
+      .section-head p,
+      .hero p { font-size: 16px; }
+      .hero { padding-top: 60px; }
+      .stats { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
-
-  <header>
+  <header class="header">
     <div class="container topbar">
-      <a href="/" class="brand">Anwaltsagent.de</a>
-
+      <a class="brand" href="#">Anwalts<span>agent</span>.de</a>
       <nav class="nav">
-        <a href="#vorteile">Vorteile</a>
-        <a href="#beitraege">Beiträge</a>
+        <a href="#features">Features</a>
+        <a href="#posts">Beiträge</a>
         <a href="#kontakt">Kontakt</a>
-        <a href="#kaufen" class="nav-cta">Domain kaufen</a>
+        <a href="https://sedo.com/search/details/?partnerid=324561&language=ar&domain=anwaltsagent.de&origin=sales_lander_15&utm_medium=Parking&utm_campaign=offerpage" class="pill-btn" target="_blank" rel="noopener noreferrer">Domain kaufen</a>
       </nav>
     </div>
   </header>
 
-  <section class="hero">
+  <section class="hero reveal">
     <div class="container hero-grid">
       <div>
-        <div class="eyebrow">Premium Legal-Tech Domain</div>
-        <h1>Anwalts<span>agent</span>.de</h1>
+        <div class="eyebrow">Domain + SEO + Conversion</div>
+        <h1>Die <strong>Premium Domain</strong> für den nächsten Legal-Tech Gewinner</h1>
         <p>
-          Eine starke, sofort einsetzbare Premium-Domain für Legal-Tech,
-          Anwaltsvermittlung und digitale Rechtsberatung im deutschen Markt.
+          Anwaltsagent.de ist nicht nur ein Name – es ist eine klare Positionierung im deutschen Rechtsmarkt.
+          Ideal für Kanzlei-Tools, Mandantenvermittlung und digitale Rechtsberatung.
         </p>
+
+        <div class="hero-actions">
+          <a class="pill-btn" target="_blank" rel="noopener noreferrer" href="https://sedo.com/search/details/?partnerid=324561&language=ar&domain=anwaltsagent.de&origin=sales_lander_15&utm_medium=Parking&utm_campaign=offerpage">Jetzt über Sedo anfragen</a>
+          <a class="ghost-btn" href="#posts">Beiträge ansehen</a>
+        </div>
 
         <div class="hero-points">
-          <div class="hero-point">Sofort verfügbar</div>
-          <div class="hero-point">Starker Markenname</div>
-          <div class="hero-point">Ideal für DACH Legal-Tech</div>
-        </div>
-
-        <div class="trust-strip">
-          <div class="trust-chip">SEO-Grundlage vorhanden</div>
-          <div class="trust-chip">Content bereits aufgebaut</div>
-          <div class="trust-chip">Direkt übertragbar</div>
+          <span class="hero-point">Starke Brand Recall</span>
+          <span class="hero-point">DACH Legal-Tech Fit</span>
+          <span class="hero-point">Sofort einsatzbereit</span>
         </div>
       </div>
 
-      <div class="hero-card">
-        <div class="hero-card-label">Warum diese Domain?</div>
-        <h2>Marke, Vertrauen und Marktfit in einer Domain</h2>
+      <aside class="hero-card">
+        <div class="mini-label">Positioning Snapshot</div>
+        <h2>High-Intent Domain mit klarer Kaufstory</h2>
         <p>
-          Anwaltsagent.de verbindet eine klare Bedeutung mit hoher Markt-Relevanz.
-          Die Domain eignet sich für Plattformen, digitale Vermittlungsmodelle,
-          Lead-Gen-Projekte und moderne Rechtsservices.
+          Kombiniert SEO-Basis, professionelles Auftreten und direkten Conversion-Pfad
+          für Käufer mit Fokus auf Wachstum im Rechtsmarkt.
         </p>
 
-        <ul class="hero-card-list">
-          <li>Einprägsamer Name mit klarem Bezug zum Rechtsmarkt</li>
-          <li>Passend für Legal-Tech, Kanzlei-Marketing und Mandantenakquise</li>
-          <li>Bereits mit Content und SEO-Grundlage aufgebaut</li>
-        </ul>
+        <div class="stats">
+          <div class="stat"><strong>DE</strong><span>Market-Fokus</span></div>
+          <div class="stat"><strong>SEO</strong><span>Content ready</span></div>
+          <div class="stat"><strong>CTA</strong><span>Sedo + Direktkontakt</span></div>
+        </div>
+      </aside>
+    </div>
+
+    <div class="container logos">
+      <div class="logos-track">
+        <span>Legal-Tech</span><span>Mandantenvermittlung</span><span>Digitale Rechtsberatung</span><span>Kanzlei Marketing</span><span>Lead Generation</span><span>Domain Asset</span>
+        <span>Legal-Tech</span><span>Mandantenvermittlung</span><span>Digitale Rechtsberatung</span><span>Kanzlei Marketing</span><span>Lead Generation</span><span>Domain Asset</span>
       </div>
     </div>
   </section>
 
-  <section class="section value" id="vorteile">
+  <section id="features" class="reveal">
     <div class="container">
-      <h2 class="section-title">Warum diese Domain?</h2>
-      <p class="section-subtitle">
-        Die Domain kombiniert einen klar verständlichen Markennamen mit einem starken
-        Einsatzbereich im deutschsprachigen Rechtsmarkt — ideal für Plattformen,
-        Vermittlungsdienste und digitale Kanzlei-Modelle.
-      </p>
-
-      <div class="cards">
-        <div class="card">
-          <h3>Starkes Keyword</h3>
-          <p>
-            „Anwaltsagent" verbindet Rechtsberatung mit Vermittlung —
-            ideal für Legal-Tech Plattformen, Lead-Modelle und moderne Mandantenakquise.
-          </p>
-        </div>
-
-        <div class="card">
-          <h3>Deutscher Markt</h3>
-          <p>
-            Exklusiv auf den DACH-Rechtsmarkt ausgerichtet. Der Name passt perfekt
-            zu digitalen Services rund um Anwälte, Beratung und Vermittlung.
-          </p>
-        </div>
-
-        <div class="card">
-          <h3>Sofort einsetzbar</h3>
-          <p>
-            Mit bestehender SEO-Basis, aufgebauter Struktur und Content-Start
-            kann die Domain direkt produktiv weiterentwickelt werden.
-          </p>
-        </div>
+      <div class="section-head">
+        <h2>Craft-first Landing Structure</h2>
+        <p>Inspiriert von modernem SaaS-Design: klare Section-Hierarchie, bessere Typografie, dezente Motion und conversion-orientierte Komposition.</p>
       </div>
-    </div>
-  </section>
 
-  {{ if .Site.RegularPages }}
-  <section class="section posts" id="beitraege">
-    <div class="container">
-      <h2 class="section-title">Aktuelle Beiträge</h2>
-      <p class="section-subtitle">
-        Ausgewählte Inhalte rund um Anwaltsuche, digitale Rechtsberatung und Legal-Tech.
-      </p>
-
-      <div class="post-list">
-        {{ range first 3 .Site.RegularPages }}
-        <a href="{{ .Permalink }}" class="post-card">
-          {{ if .Params.image }}
-          <div class="post-media">
-            <img src="{{ .Params.image }}" alt="{{ .Title }}">
+      <div class="bento">
+        <article class="card span-3">
+          <h3>Hero zuerst, weil dort Conversion passiert</h3>
+          <p>Der Hero wurde so aufgebaut, dass Brand-Message, Nutzenversprechen und Primary CTA in den ersten Sekunden klar sind.</p>
+          <div class="timeline">
+            <div class="step"><strong>1) Headline</strong><span>Konkreter Outcome statt generischem Claim.</span></div>
+            <div class="step"><strong>2) Supporting Copy</strong><span>Positionierung auf Markt + Zielgruppe.</span></div>
+            <div class="step"><strong>3) Dual CTA</strong><span>Kaufen oder erst Inhalte prüfen.</span></div>
           </div>
-          {{ else }}
-          <div class="post-media"></div>
-          {{ end }}
+        </article>
 
-          <div class="post-content">
-            <div class="post-badge">Artikel</div>
-            <div class="post-title">{{ .Title }}</div>
-            {{ if .Description }}
-            <div class="post-subtext">{{ .Description }}</div>
-            {{ else }}
-            <div class="post-subtext">Zum vollständigen Artikel wechseln</div>
-            {{ end }}
-            <div class="post-action">Artikel öffnen →</div>
+        <article class="card span-3">
+          <h3>Micro-interactions mit Zweck</h3>
+          <p>Beam-Animation auf CTA, Reveal-on-scroll und dezente Hover-Zustände schaffen Premium-Feeling ohne Ablenkung.</p>
+          <div class="timeline">
+            <div class="step"><strong>Progressive Aufmerksamkeit</strong><span>Leseführung über Bewegung und Kontrast.</span></div>
+            <div class="step"><strong>Vertrauen durch Konsistenz</strong><span>Einheitliche Card-Sprache & Rhythmus.</span></div>
+            <div class="step"><strong>Schneller Eindruck</strong><span>Modernes UI in wenigen Scrolls erfassbar.</span></div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="posts" class="reveal">
+    <div class="container">
+      <div class="section-head">
+        <h2>Beiträge suchen & filtern</h2>
+        <p>Live-Suche nach Titel, Beschreibung und Keywords für schnellen Zugriff auf passende Inhalte.</p>
+      </div>
+
+      <div class="search-wrap">
+        <span>🔎</span>
+        <input id="postSearch" type="search" placeholder="Artikel suchen..." />
+      </div>
+
+      <div class="post-grid">
+        {{ range .Site.RegularPages.ByDate.Reverse }}
+        {{ $post := . }}
+        <a href="{{ $post.Permalink }}" class="post-card" data-search="{{ lower $post.Title }} {{ lower ($post.Description | default "") }} {{ lower (delimit ($post.Params.keywords | default (slice)) " ") }}">
+          <div class="post-media">
+            {{ with $post.Params.image }}<img src="{{ . }}" alt="{{ $post.Title }}" />{{ end }}
+          </div>
+          <div class="post-body">
+            <h3>{{ $post.Title }}</h3>
+            <p>{{ if $post.Description }}{{ $post.Description }}{{ else }}Zum vollständigen Beitrag wechseln.{{ end }}</p>
+            <span>Artikel öffnen →</span>
           </div>
         </a>
         {{ end }}
       </div>
+
+      {{ if not .Site.RegularPages }}
+      <div class="empty">Aktuell sind keine Beiträge veröffentlicht. Neue SEO-Artikel erscheinen hier automatisch.</div>
+      {{ else }}
+      <div class="empty hidden" id="noResults">Keine Treffer gefunden. Versuchen Sie einen anderen Suchbegriff.</div>
+      {{ end }}
     </div>
   </section>
-  {{ end }}
 
-  <section class="section contact" id="kontakt">
-    <div class="container">
-      <h2 class="section-title">Kontakt</h2>
+  <section id="kontakt" class="reveal">
+    <div class="container cta">
+      <h2>Interesse an Anwaltsagent.de?</h2>
+      <p>Wenn Sie eine starke Marke für Legal-Tech, digitale Rechtsberatung oder Mandantenvermittlung in Deutschland aufbauen möchten, ist diese Domain ein hochwertiger Startpunkt.</p>
 
-      <div class="contact-box">
-        <p class="contact-intro">
-          Bei Interesse an <strong>Anwaltsagent.de</strong> erreichen Sie mich direkt
-          per E-Mail oder LinkedIn.
-        </p>
-
-        <ul class="contact-list">
-          <li class="contact-item">
-            <strong>E-Mail</strong>
-            <a href="mailto:alisalih.assets@gmail.com">alisalih.assets@gmail.com</a>
-          </li>
-
-          <li class="contact-item">
-            <strong>LinkedIn</strong>
-            <a href="https://www.linkedin.com/in/ali-salih-capital" target="_blank" rel="noopener noreferrer">
-              www.linkedin.com/in/ali-salih-capital
-            </a>
-          </li>
-
-          <li class="contact-item">
-            <strong>Hinweis</strong>
-            <span>Direktkauf oder Mieten mit Kaufoption über Sedo möglich.</span>
-          </li>
-        </ul>
+      <div class="cta-actions">
+        <a class="pill-btn" target="_blank" rel="noopener noreferrer" href="https://sedo.com/search/details/?partnerid=324561&language=ar&domain=anwaltsagent.de&origin=sales_lander_15&utm_medium=Parking&utm_campaign=offerpage">Über Sedo kaufen</a>
+        <a class="ghost-btn" href="mailto:alisalih.assets@gmail.com">E-Mail senden</a>
+        <a class="ghost-btn" target="_blank" rel="noopener noreferrer" href="https://www.linkedin.com/in/ali-salih-capital">LinkedIn</a>
       </div>
     </div>
   </section>
 
-  <section class="cta-bottom" id="kaufen">
-    <div class="container">
-      <div class="cta-panel">
-        <h2>Interesse an Anwaltsagent.de?</h2>
-        <p>
-          Diese Domain ist ideal für Legal-Tech Plattformen, digitale Rechtsberatung,
-          Kanzlei-Marketing oder Mandantenvermittlung. Wenn Sie einen starken Namen
-          für den deutschen Markt suchen, ist dies eine hochwertige Gelegenheit.
-        </p>
+  <footer>© Anwaltsagent.de 2026 — Premium Domain für den deutschen Legal‑Tech Markt</footer>
 
-        <div class="cta-buttons">
-          <a href="https://sedo.com/search/details/?partnerid=324561&language=ar&domain=anwaltsagent.de&origin=sales_lander_15&utm_medium=Parking&utm_campaign=offerpage" class="cta-buy">
-            Über Sedo kaufen
-          </a>
+  <script>
+    (function () {
+      const searchInput = document.getElementById('postSearch');
+      const cards = Array.from(document.querySelectorAll('.post-card'));
+      const noResults = document.getElementById('noResults');
 
-          <a href="#kontakt" class="cta-contact">
-            Direkt kontaktieren
-          </a>
-        </div>
-      </div>
-    </div>
-  </section>
+      if (searchInput && cards.length) {
+        searchInput.addEventListener('input', function () {
+          const q = (searchInput.value || '').toLowerCase().trim();
+          let visible = 0;
 
-  <div class="mobile-sticky-cta">
-    <a href="https://sedo.com/search/details/?partnerid=324561&language=ar&domain=anwaltsagent.de&origin=sales_lander_15&utm_medium=Parking&utm_campaign=offerpage" class="mobile-sticky-buy">
-      Kaufen
-    </a>
-    <a href="#kontakt" class="mobile-sticky-contact">
-      Kontakt
-    </a>
-  </div>
+          cards.forEach((card) => {
+            const text = card.getAttribute('data-search') || '';
+            const show = !q || text.includes(q);
+            card.classList.toggle('hidden', !show);
+            if (show) visible += 1;
+          });
 
-  <footer>
-    © Anwaltsagent.de 2026 — Premium-Domain für den deutschen Legal-Tech-Markt
-  </footer>
+          if (noResults) {
+            noResults.classList.toggle('hidden', visible !== 0);
+          }
+        });
+      }
 
+      const revealEls = document.querySelectorAll('.reveal');
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in');
+          }
+        });
+      }, { threshold: 0.15 });
+
+      revealEls.forEach((el) => io.observe(el));
+    })();
+  </script>
 </body>
 </html>
