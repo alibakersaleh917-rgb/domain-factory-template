@@ -3,40 +3,42 @@ brand_name: Produktionsausfall.de
 niche: Produktionsüberwachung & Industrie-Monitoring
 country: Deutschland
 language: de
-audience: Produktionsleiter, Instandhaltungsteams und industrielle SaaS-Entscheider
-brand_positioning: "B2B-Marke für industrielle Ausfallprävention, Monitoring und schnelle Reaktion auf Maschinenstillstand."
+audience: Produktionsleiter, Instandhaltungsleiter, Werksleiter und Industrial-SaaS-Entscheider
+brand_positioning: "B2B-Marke für industrielle Ausfallprävention, Echtzeit-Monitoring und schnelle Reaktion auf Maschinenstillstand."
 
 homepage:
-  title: "Produktionsausfall.de — Monitoring für weniger Stillstand"
-  description: "Produktionsausfall.de steht für industrielle Sichtbarkeit bei produktionsausfall, maschinenstillstand und ausfallzeiten in der Fertigung."
-  eyebrow: "Industrial SaaS + Monitoring"
-  headline: "Weniger <strong>Produktionsausfall</strong>, mehr operative Stabilität"
-  subheadline: "Positionierung für B2B-Anbieter rund um produktionsüberwachung, störungsmanagement und datengetriebene Fertigungsprozesse."
+  title: "Produktionsausfall.de — Plattform für industrielle Produktionsüberwachung"
+  description: "Produktionsausfall.de steht für präzise Sichtbarkeit bei Produktionsausfall, Maschinenstillstand und Industrie-Störung in modernen Fertigungsumgebungen."
+  eyebrow: "Industrial Monitoring + Manufacturing Intelligence"
+  headline: "Produktionsausfall erkennen. <strong>Ausfallzeiten reduzieren</strong>."
+  subheadline: "Positionierung für B2B-Anbieter rund um Produktionsüberwachung, Störungsmanagement und datenbasierte Werkssteuerung."
 
 seo:
-  archive_title: "Artikel zu Produktionsausfall und Maschinenstillstand"
-  archive_description: "Praxisnahe B2B-Inhalte zu produktionsausfall, industrie störung, ausfallzeiten und produktionsüberwachung."
+  archive_title: "Ratgeber zu Produktionsausfall und Maschinenstillstand"
+  archive_description: "Praxisnahe B2B-Inhalte zu Produktionsausfall, Industrie Störung, Produktionsüberwachung und Strategien, um Ausfallzeiten zu reduzieren."
   article_default_description: "Artikel auf Produktionsausfall.de"
   keywords:
     - "produktionsausfall"
     - "maschinenstillstand"
     - "industrie störung"
-    - "ausfallzeiten reduzieren"
     - "produktionsüberwachung"
+    - "ausfallzeiten reduzieren"
+    - "manufacturing downtime"
+    - "industrial monitoring"
 
 cta:
   sedo_url: "https://sedo.com/search/details/?domain=produktionsausfall.de"
   nav_buy_label: "Domain kaufen"
   hero_primary_label: "Sedo-Anfrage starten"
-  hero_secondary_label: "Fachbeiträge ansehen"
+  hero_secondary_label: "Ratgeber öffnen"
   contact_heading: "Interesse an Produktionsausfall.de?"
-  contact_body: "Für B2B-Monitoring- und Industrial-SaaS-Projekte ist produktionsausfall.de eine starke, intent-klare Domain."
+  contact_body: "Für B2B-Produkte in Industrial Monitoring, MES, OEE-Tracking oder Predictive Maintenance ist produktionsausfall.de ein intent-starker Markenanker."
   contact_buy_label: "Über Sedo kaufen"
   contact_email_label: "E-Mail senden"
   contact_email: "owner@example.com"
   linkedin_label: "LinkedIn"
   linkedin_url: "https://www.linkedin.com/in/example-owner"
-  single_article_text: "Wenn Sie ein B2B-Angebot für produktionsüberwachung und störungsprävention aufbauen, kann <strong>Produktionsausfall.de</strong> ein relevanter Markenkern sein."
+  single_article_text: "Wenn Sie ein B2B-Angebot für Produktionsüberwachung, Industrie-Störung-Management oder Manufacturing-Downtime-Analytics aufbauen, kann <strong>Produktionsausfall.de</strong> ein klarer Markenkern sein."
   single_article_sedo_label: "Domain über Sedo ansehen"
 
 analytics:
@@ -45,10 +47,10 @@ analytics:
   ga_measurement_id: ""
 
 content:
-  article_tone: "analytisch, praxisnah und B2B-orientiert für industrielle Entscheider"
-  seo_keyword_hints: "produktionsausfall, maschinenstillstand, industrie störung, ausfallzeiten, produktionsüberwachung"
-  image_style_hints: "industrial monitoring dashboard; factory production line; machine maintenance; germany industry"
-  article_cta: "Wenn Sie eine B2B-Marke für Ausfallzeiten-Management und industrielle Monitoring-Lösungen aufbauen möchten, kann **produktionsausfall.de** ein starker Domain-Start sein."
+  article_tone: "präzise, modern und entscheidungsorientiert für industrielle B2B-Zielgruppen"
+  seo_keyword_hints: "produktionsausfall, maschinenstillstand, industrie störung, ausfallzeiten reduzieren, manufacturing downtime, industrial monitoring"
+  image_style_hints: "control room dashboard; smart factory monitoring wall; machine line sensors; industrial maintenance team"
+  article_cta: "Wenn Sie eine B2B-Marke für Produktionsüberwachung und Downtime-Reduktion aufbauen möchten, kann **produktionsausfall.de** ein starker Domain-Startpunkt sein."
   topic_buckets: "informational|comparison|cost/pricing|checklist/how-to|mistakes to avoid|faq|niche-specific subtopics|location-based topics|trends / future of the niche|tools / software / platforms"
   title_angle_patterns: "how-to|guide|checklist|comparison|mistakes|costs|best practices|trends|faq|decision framework"
   recent_posts_memory_limit: 30

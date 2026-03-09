@@ -1,42 +1,42 @@
-name: produktionsausfall-industrial
-visual_mood: "dark-industrial-monitoring"
+name: industrial-template
+visual_mood: "control-room-modern"
 
 typography:
   font_family: "Inter, ui-sans-serif, -apple-system, Segoe UI, Roboto, sans-serif"
   article_font_family: "Inter, ui-sans-serif, -apple-system, Segoe UI, Roboto, sans-serif"
 
 palette:
-  bg: "#07090d"
-  bg_soft: "#0f141b"
-  card: "rgba(20, 27, 36, 0.82)"
-  card_strong: "rgba(26, 35, 47, 0.95)"
-  text: "#e8eef7"
-  text_muted: "#9dafc8"
-  line: "rgba(118, 143, 173, 0.28)"
-  brand_1: "#3f87ff"
-  brand_2: "#1db5a8"
-  accent: "#ff9f45"
+  bg: "#06090f"
+  bg_soft: "#0d141d"
+  card: "rgba(18, 27, 38, 0.82)"
+  card_strong: "rgba(21, 34, 47, 0.96)"
+  text: "#e8eef8"
+  text_muted: "#97abc4"
+  line: "rgba(122, 151, 186, 0.3)"
+  brand_1: "#3c92ff"
+  brand_2: "#1ec6b3"
+  accent: "#ffb14a"
   success: "#34d399"
 
 background:
-  body_gradient_1: "radial-gradient(1100px 650px at 10% -20%, rgba(63,135,255,0.25), transparent 60%)"
-  body_gradient_2: "radial-gradient(980px 520px at 100% 0%, rgba(29,181,168,0.18), transparent 63%)"
-  header_gradient: "linear-gradient(180deg, rgba(7,9,13,0.9), rgba(7,9,13,0.72))"
-  hero_card_gradient: "linear-gradient(155deg, rgba(63,135,255,0.22), rgba(29,181,168,0.12))"
-  eyebrow_bg: "rgba(63,135,255,0.14)"
-  cta_gradient: "linear-gradient(140deg, rgba(63,135,255,0.2), rgba(255,159,69,0.15))"
+  body_gradient_1: "radial-gradient(1120px 640px at 8% -20%, rgba(60,146,255,0.24), transparent 60%)"
+  body_gradient_2: "radial-gradient(920px 560px at 100% 0%, rgba(30,198,179,0.19), transparent 63%)"
+  header_gradient: "linear-gradient(180deg, rgba(6,9,15,0.9), rgba(6,9,15,0.74))"
+  hero_card_gradient: "linear-gradient(155deg, rgba(60,146,255,0.24), rgba(30,198,179,0.13))"
+  eyebrow_bg: "rgba(60,146,255,0.16)"
+  cta_gradient: "linear-gradient(140deg, rgba(60,146,255,0.2), rgba(255,177,74,0.16))"
   pill_gradient: "linear-gradient(135deg, var(--brand), var(--brand-2))"
   brand_text_gradient: "linear-gradient(90deg, var(--brand), var(--brand-2))"
 
 borders:
-  card_border: "1px solid rgba(137, 166, 201, 0.3)"
-  pill_border: "1px solid rgba(220,235,255,0.24)"
+  card_border: "1px solid rgba(138, 172, 212, 0.3)"
+  pill_border: "1px solid rgba(223,236,255,0.24)"
   section_border: "1px solid var(--line)"
 
 effects:
-  shadow: "0 24px 70px rgba(0, 0, 0, 0.5)"
-  glow: "radial-gradient(circle, rgba(29,181,168,0.28), transparent 72%)"
-  pill_shadow: "0 10px 30px rgba(63,135,255,0.22)"
+  shadow: "0 24px 72px rgba(0, 0, 0, 0.52)"
+  glow: "radial-gradient(circle, rgba(30,198,179,0.29), transparent 72%)"
+  pill_shadow: "0 10px 30px rgba(60,146,255,0.24)"
 
 card_style:
   radius: "16px"
