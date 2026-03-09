@@ -461,10 +461,11 @@
 <body>
   <header class="header">
     <div class="container topbar">
-      <a class="brand" href="#">Anwalts<span>agent</span>.de</a>
+      <a class="brand" href="/">Anwalts<span>agent</span>.de</a>
       <nav class="nav">
         <a href="#features">Features</a>
-        <a href="#posts">Beiträge</a>
+        <a href="#posts">Neueste Beiträge</a>
+        <a href="/posts/">Alle Beiträge</a>
         <a href="#kontakt">Kontakt</a>
         <a href="https://sedo.com/search/details/?partnerid=324561&language=ar&domain=anwaltsagent.de&origin=sales_lander_15&utm_medium=Parking&utm_campaign=offerpage" onclick="gtag('event', 'domain_click', {'event_category': 'engagement', 'event_label': 'anwaltsagent.de'});" class="pill-btn" target="_blank" rel="noopener noreferrer">Domain kaufen</a>
       </nav>
@@ -551,17 +552,13 @@
   <section id="posts" class="reveal">
     <div class="container">
       <div class="section-head">
-        <h2>Beiträge suchen & filtern</h2>
-        <p>Live-Suche nach Titel, Beschreibung und Keywords für schnellen Zugriff auf passende Inhalte.</p>
+        <h2>Neueste Beiträge</h2>
+        <p>Aktuelle Legal-Tech-Artikel für Sichtbarkeit, Mandantengewinnung und digitale Rechtsberatung.</p>
       </div>
 
-      <div class="search-wrap">
-        <span>🔎</span>
-        <input id="postSearch" type="search" placeholder="Artikel suchen..." />
-      </div>
 
       <div class="post-grid">
-        {{ range .Site.RegularPages.ByDate.Reverse }}
+        {{ range first 4 .Site.RegularPages.ByDate.Reverse }}
         {{ $post := . }}
         <a href="{{ $post.Permalink }}" class="post-card" data-search="{{ lower $post.Title }} {{ lower ($post.Description | default "") }} {{ lower (delimit ($post.Params.keywords | default (slice)) " ") }}">
           <div class="post-media">
@@ -578,9 +575,11 @@
 
       {{ if not .Site.RegularPages }}
       <div class="empty">Aktuell sind keine Beiträge veröffentlicht. Neue SEO-Artikel erscheinen hier automatisch.</div>
-      {{ else }}
-      <div class="empty hidden" id="noResults">Keine Treffer gefunden. Versuchen Sie einen anderen Suchbegriff.</div>
       {{ end }}
+
+      <div class="cta-actions" style="margin-top:20px;">
+        <a class="ghost-btn" href="/posts/">Zum Artikel-Archiv</a>
+      </div>
     </div>
   </section>
 
@@ -601,28 +600,6 @@
 
   <script>
     (function () {
-      const searchInput = document.getElementById('postSearch');
-      const cards = Array.from(document.querySelectorAll('.post-card'));
-      const noResults = document.getElementById('noResults');
-
-      if (searchInput && cards.length) {
-        searchInput.addEventListener('input', function () {
-          const q = (searchInput.value || '').toLowerCase().trim();
-          let visible = 0;
-
-          cards.forEach((card) => {
-            const text = card.getAttribute('data-search') || '';
-            const show = !q || text.includes(q);
-            card.classList.toggle('hidden', !show);
-            if (show) visible += 1;
-          });
-
-          if (noResults) {
-            noResults.classList.toggle('hidden', visible !== 0);
-          }
-        });
-      }
-
       const revealEls = document.querySelectorAll('.reveal');
       const io = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {

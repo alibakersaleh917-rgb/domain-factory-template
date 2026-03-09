@@ -1,216 +1,46 @@
-{{ define "main" }}
-<style>
-  .article-shell {
-    background: #ffffff;
-    min-height: 100vh;
-  }
-
-  .article-wrap {
-    max-width: 860px;
-    margin: 0 auto;
-    padding: 42px 18px 70px;
-    color: #111827;
-    overflow-wrap: break-word;
-    word-wrap: break-word;
-  }
-
-  .article-label {
-    display: inline-block;
-    font-size: 12px;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #e94560;
-    background: #fff1f4;
-    border-radius: 999px;
-    padding: 7px 11px;
-    margin-bottom: 18px;
-  }
-
-  .article-title {
-    font-size: 34px;
-    line-height: 1.18;
-    font-weight: 900;
-    margin: 0 0 14px;
-    color: #111827;
-    word-break: break-word;
-  }
-
-  .article-description {
-    font-size: 18px;
-    line-height: 1.75;
-    color: #4b5563;
-    margin: 0 0 26px;
-  }
-
-  .article-image {
-    width: 100%;
-    display: block;
-    border-radius: 18px;
-    margin: 0 0 30px;
-    object-fit: cover;
-    max-height: 430px;
-  }
-
-  .article-divider {
-    margin: 0 0 34px;
-    border: none;
-    border-top: 1px solid #e5e7eb;
-  }
-
-  .article-content {
-    font-size: 20px;
-    line-height: 1.9;
-    color: #1f2937;
-  }
-
-  .article-content h1,
-  .article-content h2,
-  .article-content h3,
-  .article-content h4 {
-    line-height: 1.22;
-    font-weight: 900;
-    color: #111827;
-    margin-top: 34px;
-    margin-bottom: 16px;
-    word-break: break-word;
-  }
-
-  .article-content h1 { font-size: 32px; }
-  .article-content h2 { font-size: 28px; }
-  .article-content h3 { font-size: 24px; }
-  .article-content h4 { font-size: 20px; }
-
-  .article-content p {
-    margin: 0 0 20px;
-  }
-
-  .article-content ul,
-  .article-content ol {
-    padding-left: 24px;
-    margin: 0 0 24px;
-  }
-
-  .article-content li {
-    margin-bottom: 10px;
-  }
-
-  .article-content img {
-    max-width: 100%;
-    height: auto;
-    border-radius: 14px;
-  }
-
-  .article-content a {
-    color: #2563eb;
-    text-decoration: none;
-  }
-
-  .article-content a:hover {
-    text-decoration: underline;
-  }
-
-  .article-soft-cta {
-    margin-top: 38px;
-    padding-top: 24px;
-    border-top: 1px solid #e5e7eb;
-  }
-
-  .article-soft-cta p {
-    font-size: 17px;
-    line-height: 1.85;
-    color: #4b5563;
-    margin-bottom: 16px;
-  }
-
-  .article-soft-links {
-    display: flex;
-    gap: 16px;
-    flex-wrap: wrap;
-  }
-
-  .article-soft-links a {
-    font-size: 15px;
-    font-weight: 800;
-    color: #e94560;
-  }
-
-  .article-soft-links a:hover {
-    text-decoration: underline;
-  }
-
-  @media (max-width: 768px) {
-    .article-wrap {
-      padding: 24px 16px 46px;
-    }
-
-    .article-title {
-      font-size: 28px;
-      line-height: 1.18;
-    }
-
-    .article-description {
-      font-size: 16px;
-      line-height: 1.7;
-    }
-
-    .article-image {
-      margin-bottom: 24px;
-      border-radius: 14px;
-      max-height: 260px;
-    }
-
-    .article-content {
-      font-size: 18px;
-      line-height: 1.85;
-    }
-
-    .article-content h1 { font-size: 28px; }
-    .article-content h2 { font-size: 24px; }
-    .article-content h3 { font-size: 21px; }
-    .article-content h4 { font-size: 19px; }
-
-    .article-content ul,
-    .article-content ol {
-      padding-left: 22px;
-    }
-  }
-</style>
-
-<div class="article-shell">
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ .Title }} | Anwaltsagent.de</title>
+  <meta name="description" content="{{ .Description | default "Artikel auf Anwaltsagent.de" }}" />
+  <style>
+    body { font-family: Inter, ui-sans-serif, -apple-system, Segoe UI, Roboto, sans-serif; margin: 0; background: #ffffff; color: #111827; }
+    .top { padding: 16px 18px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: center; gap: 14px; font-size: 14px; }
+    .top a { color: #334155; text-decoration: none; font-weight: 700; }
+    .article-wrap { max-width: 860px; margin: 0 auto; padding: 42px 18px 70px; line-height: 1.8; }
+    .article-label { display: inline-block; font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #e94560; background: #fff1f4; border-radius: 999px; padding: 7px 11px; margin-bottom: 18px; }
+    .article-title { font-size: 34px; line-height: 1.18; font-weight: 900; margin: 0 0 14px; }
+    .article-description { font-size: 18px; color: #4b5563; margin: 0 0 26px; }
+    .article-image { width: 100%; border-radius: 18px; margin-bottom: 30px; object-fit: cover; max-height: 430px; }
+    .article-content { font-size: 20px; color: #1f2937; }
+    .article-content h1,.article-content h2,.article-content h3,.article-content h4 { line-height: 1.22; font-weight: 900; margin-top: 34px; margin-bottom: 16px; }
+    .article-soft-cta { margin-top: 38px; padding-top: 24px; border-top: 1px solid #e5e7eb; }
+    .article-soft-links { display: flex; gap: 16px; flex-wrap: wrap; }
+    .article-soft-links a { font-size: 15px; font-weight: 800; color: #e94560; text-decoration: none; }
+  </style>
+  {{ partial "analytics.html" . }}
+</head>
+<body>
+  <nav class="top">
+    <a href="/">Startseite</a>
+    <a href="/posts/">Alle Beiträge</a>
+  </nav>
   <article class="article-wrap">
     <div class="article-label">Artikel</div>
-
     <h1 class="article-title">{{ .Title }}</h1>
-
-    {{ if .Description }}
-    <p class="article-description">{{ .Description }}</p>
-    {{ end }}
-
-    {{ if .Params.image }}
-    <img class="article-image" src="{{ .Params.image }}" alt="{{ .Title }}">
-    {{ end }}
-
-    <hr class="article-divider">
-
-    <div class="article-content">
-      {{ .Content }}
-    </div>
+    {{ if .Description }}<p class="article-description">{{ .Description }}</p>{{ end }}
+    {{ if .Params.image }}<img class="article-image" src="{{ .Params.image }}" alt="{{ .Title }}">{{ end }}
+    <div class="article-content">{{ .Content }}</div>
 
     <div class="article-soft-cta">
-      <p>
-        Wenn Sie eine Marke für Legal-Tech, digitale Rechtsberatung oder Mandantenvermittlung
-        in Deutschland aufbauen möchten, kann <strong>Anwaltsagent.de</strong> eine starke
-        und einprägsame Domain für Ihr Projekt sein.
-      </p>
-
+      <p>Wenn Sie eine Marke für Legal-Tech in Deutschland aufbauen möchten, kann <strong>Anwaltsagent.de</strong> eine starke und einprägsame Domain für Ihr Projekt sein.</p>
       <div class="article-soft-links">
-        <a href="https://sedo.com/search/details/?partnerid=324561&language=ar&domain=anwaltsagent.de&origin=sales_lander_15&utm_medium=Parking&utm_campaign=offerpage">
-          Domain über Sedo ansehen
-        </a>
+        <a href="https://sedo.com/search/details/?partnerid=324561&language=ar&domain=anwaltsagent.de&origin=sales_lander_15&utm_medium=Parking&utm_campaign=offerpage" onclick="gtag('event', 'domain_click', {'event_category': 'engagement', 'event_label': 'anwaltsagent.de'});">Domain über Sedo ansehen</a>
         <a href="/#kontakt">Direkt Kontakt aufnehmen</a>
       </div>
     </div>
   </article>
-</div>
-{{ end }}
+</body>
+</html>
