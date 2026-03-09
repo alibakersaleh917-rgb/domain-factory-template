@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{{ .title }}</title>
   <meta name="description" content="{{ .description }}" />
-  <style>{{ partial .stylePartial $ctx }}</style>
+<style>{{ partial .stylePartial $ctx | safeCSS }}</style>
   {{ partial "analytics.html" $ctx }}
   {{ partial "structured-data.html" $ctx }}
 </head>
