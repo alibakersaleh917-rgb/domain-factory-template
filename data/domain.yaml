@@ -50,3 +50,9 @@ content:
   seo_keyword_hints: "anwalt finden, rechtsberatung online, kanzlei auswahl, kosten, erstberatung"
   image_style_hints: "Germany law office legal consultation; German courthouse legal; legal consultation office"
   article_cta: "Wenn Sie eine Marke für Legal-Tech, digitale Rechtsberatung oder Mandantenvermittlung in Deutschland aufbauen möchten, kann **Anwaltsagent.de** eine starke und einprägsame Domain für Ihr Projekt sein."
+  topic_buckets: "informational|comparison|cost/pricing|checklist/how-to|mistakes to avoid|faq|niche-specific subtopics|location-based topics|trends / future of the niche|tools / software / platforms"
+  title_angle_patterns: "how-to|guide|checklist|comparison|mistakes|costs|best practices|trends|faq|decision framework"
+  recent_posts_memory_limit: 30
+  title_similarity_threshold: 0.75
+  intent_similarity_threshold: 0.70
+  slug_similarity_threshold: 0.70

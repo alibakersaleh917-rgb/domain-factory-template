@@ -21,6 +21,34 @@ DEFAULT_CONFIG = {
         "Wenn Sie eine starke Marke in dieser Nische aufbauen möchten, "
         "kann **Example** eine interessante Domain für Ihr Projekt sein."
     ),
+    "topic_buckets": [
+        "informational",
+        "comparison",
+        "cost/pricing",
+        "checklist/how-to",
+        "mistakes to avoid",
+        "faq",
+        "niche-specific subtopics",
+        "location-based topics",
+        "trends / future of the niche",
+        "tools / software / platforms",
+    ],
+    "title_angle_patterns": [
+        "how-to",
+        "guide",
+        "checklist",
+        "comparison",
+        "mistakes",
+        "costs",
+        "best practices",
+        "trends",
+        "faq",
+        "decision framework",
+    ],
+    "recent_posts_memory_limit": 30,
+    "title_similarity_threshold": 0.75,
+    "intent_similarity_threshold": 0.70,
+    "slug_similarity_threshold": 0.70,
 }
 
 
@@ -117,8 +145,43 @@ def _normalize_loaded_config(loaded: dict) -> dict:
         "article_tone": content.get("article_tone") or loaded.get("article_tone"),
         "image_style_hints": content.get("image_style_hints") or loaded.get("image_style_hints"),
         "article_cta": content.get("article_cta") or loaded.get("article_cta"),
+        "topic_buckets": _split_pipe_or_comma_list(content.get("topic_buckets") or loaded.get("topic_buckets")),
+        "title_angle_patterns": _split_pipe_or_comma_list(content.get("title_angle_patterns") or loaded.get("title_angle_patterns")),
+        "recent_posts_memory_limit": _to_int(content.get("recent_posts_memory_limit") or loaded.get("recent_posts_memory_limit")),
+        "title_similarity_threshold": _to_float(content.get("title_similarity_threshold") or loaded.get("title_similarity_threshold")),
+        "intent_similarity_threshold": _to_float(content.get("intent_similarity_threshold") or loaded.get("intent_similarity_threshold")),
+        "slug_similarity_threshold": _to_float(content.get("slug_similarity_threshold") or loaded.get("slug_similarity_threshold")),
     }
     return {k: v for k, v in normalized.items() if v is not None}
+
+
+def _split_pipe_or_comma_list(raw: str | list | None):
+    if not raw:
+        return None
+    if isinstance(raw, list):
+        return [str(item).strip() for item in raw if str(item).strip()]
+    text = str(raw)
+    separator = "|" if "|" in text else ","
+    values = [item.strip() for item in text.split(separator)]
+    return [item for item in values if item]
+
+
+def _to_int(raw):
+    if raw is None or raw == "":
+        return None
+    try:
+        return int(raw)
+    except (TypeError, ValueError):
+        return None
+
+
+def _to_float(raw):
+    if raw is None or raw == "":
+        return None
+    try:
+        return float(raw)
+    except (TypeError, ValueError):
+        return None
 
 
 def load_domain_config(config_path: Path | str) -> dict:
