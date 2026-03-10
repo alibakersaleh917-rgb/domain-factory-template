@@ -1,852 +1,305 @@
-import os
-import re
-import json
-import time
-import random
-import datetime
+#!/usr/bin/env python3
+
+from __future__ import annotations
+
 import argparse
+import datetime as dt
+import json
+import logging
+import os
+import random
+import re
+import time
 from pathlib import Path
-from difflib import SequenceMatcher
 
-from domain_config import DEFAULT_CONFIG, load_domain_config
 
-OPENROUTER_KEY = os.environ.get("OPENROUTER_KEY", "")
-UNSPLASH_KEY = os.environ.get("UNSPLASH_KEY", "")
-
-WRITER_MODEL = "google/gemini-2.0-flash-001"
-REVIEW_MODEL = "mistralai/mistral-small-24b-instruct-2501"
+from domain_config import load_domain_config
+from internal_links import resolve_internal_links
+from keyword_tracker import KeywordTracker
+from sitemap_ping import ping_search_engines
 
 CONFIG_PATH = Path(os.environ.get("DOMAIN_CONFIG_PATH", "data/domain.yaml"))
-
 CONFIG = load_domain_config(CONFIG_PATH)
 
-def language_prompt_config(language_code: str) -> tuple[str, str]:
-    code = (language_code or "de").lower()
-    if code.startswith("de"):
-        return "Deutsch", "deutscher"
-    if code.startswith("en"):
-        return "English", "english"
-    if code.startswith("fr"):
-        return "Français", "français"
-    if code.startswith("es"):
-        return "Español", "español"
-    return language_code or "Deutsch", "international"
-
-
-def get_brand_positioning() -> str:
-    return CONFIG.get("brand_positioning") or (
-        f"{CONFIG['brand_name']} positioniert sich in {CONFIG['geo']} "
-        f"für {CONFIG['niche']} mit Fokus auf {CONFIG['audience']}."
-    )
-
-
 POSTS_DIR = Path("content/posts")
-IMAGES_DIR = Path("static/images")
-TODAY = datetime.datetime.utcnow().strftime("%Y-%m-%d")
-KEYWORD = random.choice(CONFIG["keywords"])
+LOG_DIR = Path("logs")
+LOG_DIR.mkdir(parents=True, exist_ok=True)
 
-DEFAULT_BUCKET_ANGLE_MAP = {
-    "informational": ["guide", "best practices"],
-    "comparison": ["comparison", "decision framework"],
-    "costs": ["costs", "guide"],
-    "checklist/how-to": ["how-to", "checklist"],
-    "mistakes": ["mistakes", "best practices"],
-    "FAQ": ["faq", "guide"],
-    "niche subtopics": ["guide", "how-to"],
-    "local topics": ["guide", "checklist"],
-    "trends": ["trends", "decision framework"],
-    "tools/platforms": ["comparison", "best practices"],
-}
+OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY") or os.environ.get("OPENROUTER_KEY", "")
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
 
-BUCKET_ALIASES = {
-    "cost/pricing": "costs",
-    "cost": "costs",
-    "mistakes to avoid": "mistakes",
-    "faq": "FAQ",
-    "niche-specific subtopics": "niche subtopics",
-    "location-based topics": "local topics",
-    "trends / future of the niche": "trends",
-    "tools / software / platforms": "tools/platforms",
-}
+OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
+GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 
+STAGE_1_MODEL = "anthropic/claude-3.5-sonnet"
+STAGE_2_MODEL = "deepseek-r1-distill-llama-70b"
+STAGE_3_MODEL = "llama-3.3-70b-versatile"
 
-def call_openrouter(prompt: str, model: str, max_tokens: int = 2400) -> str:
-    if not OPENROUTER_KEY or not OPENROUTER_KEY.strip():
-        raise RuntimeError("OPENROUTER_KEY is required")
-
-    import requests
-
-    response = requests.post(
-        "https://openrouter.ai/api/v1/chat/completions",
-        headers={
-            "Authorization": f"Bearer {OPENROUTER_KEY}",
-            "Content-Type": "application/json",
-        },
-        json={
-            "model": model,
-            "messages": [{"role": "user", "content": prompt}],
-            "max_tokens": max_tokens,
-            "temperature": 0.7,
-        },
-        timeout=180,
-    )
-
-    if response.status_code != 200:
-        raise Exception(f"{response.status_code}: {response.text[:500]}")
-
-    return response.json()["choices"][0]["message"]["content"].strip()
+logger = logging.getLogger("generation")
+logger.setLevel(logging.INFO)
+handler = logging.FileHandler(LOG_DIR / "generation.log", encoding="utf-8")
+handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
+logger.addHandler(handler)
 
 
 def slugify(text: str) -> str:
     text = text.lower().strip()
-    replacements = {
-        "ä": "ae",
-        "ö": "oe",
-        "ü": "ue",
-        "ß": "ss",
-    }
-    for src, dst in replacements.items():
+    for src, dst in {"ä": "ae", "ö": "oe", "ü": "ue", "ß": "ss"}.items():
         text = text.replace(src, dst)
-
     text = re.sub(r"[^\w\s-]", "", text)
     text = re.sub(r"[\s_]+", "-", text)
-    text = re.sub(r"-{2,}", "-", text)
-    return text.strip("-")
+    return re.sub(r"-{2,}", "-", text).strip("-")
 
 
-def extract_markdown_block(text: str) -> str:
-    match = re.search(r"```(?:markdown|md)?\s*(.*?)```", text, re.DOTALL | re.IGNORECASE)
-    if match:
-        text = match.group(1).strip()
-    else:
-        text = text.strip()
-
-    if "---" in text:
-        text = text[text.find("---"):].strip()
-
-    return text
-
-
-def has_valid_frontmatter(article: str) -> bool:
-    if not article.startswith("---"):
-        return False
-
-    parts = article.split("---", 2)
+def parse_frontmatter(md: str) -> tuple[dict[str, str], str]:
+    if not md.startswith("---"):
+        return {}, md
+    parts = md.split("---", 2)
     if len(parts) < 3:
-        return False
-
-    fm = parts[1]
-    required = ["title:", "date:", "description:", "keywords:"]
-    return all(field in fm for field in required)
-
-
-def parse_frontmatter(article: str):
-    parts = article.split("---", 2)
-    if len(parts) < 3:
-        return None, None
-
-    frontmatter = parts[1].strip()
+        return {}, md
+    fm_raw = parts[1]
     body = parts[2].strip()
-
-    def grab(pattern: str, default: str = "") -> str:
-        m = re.search(pattern, frontmatter, re.MULTILINE)
-        return m.group(1).strip() if m else default
-
-    title = grab(r'^title:\s*["\']?(.*?)["\']?$')
-    description = grab(r'^description:\s*["\']?(.*?)["\']?$')
-    date_value = grab(r'^date:\s*["\']?(.*?)["\']?$')
-    keywords_line = grab(r"^keywords:\s*(.*?)$")
-    image_line = grab(r'^image:\s*["\']?(.*?)["\']?$')
-
-    return {
-        "title": title,
-        "description": description,
-        "date": date_value,
-        "keywords_line": keywords_line,
-        "image": image_line,
-    }, body
+    fm: dict[str, str] = {}
+    for line in fm_raw.splitlines():
+        if ":" not in line:
+            continue
+        key, value = line.split(":", 1)
+        fm[key.strip()] = value.strip().strip('"')
+    return fm, body
 
 
-def normalize_keywords_line(keywords_line: str, fallback_keyword: str) -> str:
-    if not keywords_line:
-        return f'["{fallback_keyword}"]'
-
-    keywords_line = keywords_line.strip()
-
-    if keywords_line.startswith("[") and keywords_line.endswith("]"):
-        return keywords_line
-
-    return f'["{fallback_keyword}"]'
+def strip_code_fence(text: str) -> str:
+    m = re.search(r"```(?:markdown|md)?\s*(.*?)```", text, flags=re.DOTALL | re.IGNORECASE)
+    return (m.group(1) if m else text).strip()
 
 
-def _score_unsplash_candidate(candidate: dict, keyword: str) -> int:
-    score = 0
-
-    location = candidate.get("location") or {}
-    country = (location.get("country") or "").lower()
-    city = (location.get("city") or "").lower()
-
-    geo_tokens = [t.lower() for t in re.split(r"[\s,;/]+", str(CONFIG.get("geo", ""))) if t]
-
-    if country and any(token in country for token in geo_tokens):
-        score += 25
-
-    title_blob = " ".join(
-        [
-            candidate.get("description") or "",
-            candidate.get("alt_description") or "",
-            keyword,
-            CONFIG.get("niche", ""),
-            CONFIG.get("seo_keyword_hints", ""),
-        ]
-    ).lower()
-
-    relevance_tokens = [
-        token.lower()
-        for token in re.split(r"[\s,;/]+", f"{CONFIG.get('niche','')} {CONFIG.get('seo_keyword_hints','')}")
-        if len(token) > 2
-    ]
-    if any(token in title_blob for token in relevance_tokens):
-        score += 20
-
-    score += int(candidate.get("width", 0) >= 1600)
-    score += int(candidate.get("height", 0) >= 900)
-
-    return score
-
-
-def _unsplash_random_candidates(query: str, count: int = 8):
-    if not UNSPLASH_KEY:
-        raise RuntimeError("UNSPLASH_KEY is required")
+def call_with_retry(url: str, api_key: str, model: str, system_prompt: str, user_prompt: str) -> str:
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+    }
+    payload = {
+        "model": model,
+        "messages": [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ],
+        "temperature": 0.7,
+    }
 
     import requests
 
-    response = requests.get(
-        "https://api.unsplash.com/photos/random",
-        params={
-            "query": query,
-            "orientation": "landscape",
-            "content_filter": "high",
-            "count": count,
-            "client_id": UNSPLASH_KEY,
-        },
-        timeout=60,
-    )
-
-    if response.status_code == 404:
-        return []
-
-    if response.status_code != 200:
-        raise Exception(f"Unsplash random error: {response.status_code} {response.text[:300]}")
-
-    data = response.json()
-    return data if isinstance(data, list) else [data]
-
-
-def _unsplash_search_candidates(query: str, per_page: int = 20):
-    if not UNSPLASH_KEY:
-        raise RuntimeError("UNSPLASH_KEY is required")
-
-    import requests
-
-    response = requests.get(
-        "https://api.unsplash.com/search/photos",
-        params={
-            "query": query,
-            "orientation": "landscape",
-            "content_filter": "high",
-            "per_page": per_page,
-            "client_id": UNSPLASH_KEY,
-        },
-        timeout=60,
-    )
-
-    if response.status_code == 404:
-        return []
-
-    if response.status_code != 200:
-        raise Exception(f"Unsplash search error: {response.status_code} {response.text[:300]}")
-
-    data = response.json()
-    return data.get("results", [])
-
-
-def fetch_unsplash_image(keyword: str, slug: str) -> str:
-    IMAGES_DIR.mkdir(parents=True, exist_ok=True)
-
-    image_hint = CONFIG.get("image_style_hints", "")
-    query_seed = [hint.strip() for hint in str(image_hint).split(";") if hint.strip()]
-
-    geo = CONFIG.get("geo", "")
-    niche = CONFIG.get("niche", "")
-
-    queries = [f"{keyword} {hint}" for hint in query_seed]
-    queries.extend([
-        f"{keyword} {niche} {geo}",
-        f"{keyword} {geo}",
-        f"{niche} {geo}",
-        f"{keyword} consultation",
-        f"{niche} professional office",
-    ])
-
-    candidates = []
-    for query in queries:
+    for attempt in range(1, 4):
         try:
-            random_hits = _unsplash_random_candidates(query, count=8)
-            candidates.extend(random_hits)
-
-            if len(candidates) < 3:
-                search_hits = _unsplash_search_candidates(query, per_page=20)
-                candidates.extend(search_hits)
-
-            if candidates:
-                break
-        except Exception as err:
-            print(f"Unsplash query failed ({query}): {err}")
-            continue
-
-    if not candidates:
-        raise Exception("Unsplash returned no image candidates for all fallback queries")
-
-    best = max(candidates, key=lambda c: _score_unsplash_candidate(c, keyword))
-    urls = best.get("urls") or {}
-    image_url = urls.get("regular") or urls.get("full") or urls.get("small")
-
-    if not image_url:
-        raise Exception("Unsplash image URL missing")
-
-    import requests
-
-    image_response = requests.get(image_url, stream=True, timeout=60)
-    if image_response.status_code != 200:
-        raise Exception("Failed to download image from Unsplash")
-
-    filename = f"{TODAY}-{slug}.jpg"
-    filepath = IMAGES_DIR / filename
-
-    with open(filepath, "wb") as f:
-        for chunk in image_response.iter_content(8192):
-            f.write(chunk)
-
-    return f"/images/{filename}"
+            resp = requests.post(url, headers=headers, json=payload, timeout=300)
+            if resp.status_code >= 400:
+                raise RuntimeError(f"{resp.status_code} {resp.text[:500]}")
+            data = resp.json()
+            return data["choices"][0]["message"]["content"].strip()
+        except Exception as exc:
+            logger.warning("API call failed model=%s attempt=%s err=%s", model, attempt, exc)
+            if attempt >= 3:
+                raise
+            time.sleep(2**attempt)
+    raise RuntimeError("Unreachable")
 
 
-def strip_junk_prefix(body: str) -> str:
-    junk_prefixes = [
-        "hier ist der optimierte artikel",
-        "hier ist der überarbeitete artikel",
-        "hier ist die optimierte version",
-        "hier ist die verbesserte version",
-        "hier ist der verbesserte artikel",
-        "improved article",
-        "optimized article",
-        "überarbeiteter artikel",
-    ]
-
-    body_clean = body.strip()
-    body_lower = body_clean.lower()
-
-    for prefix in junk_prefixes:
-        if body_lower.startswith(prefix):
-            split_pos = body_clean.find("\n")
-            if split_pos != -1:
-                body_clean = body_clean[split_pos:].strip()
-            break
-
-    return body_clean
-
-
-def strip_frontmatter_lines_from_body(body: str) -> str:
-    body = re.sub(r'^title:\s*.*$', '', body, flags=re.MULTILINE)
-    body = re.sub(r'^date:\s*.*$', '', body, flags=re.MULTILINE)
-    body = re.sub(r'^description:\s*.*$', '', body, flags=re.MULTILINE)
-    body = re.sub(r'^keywords:\s*.*$', '', body, flags=re.MULTILINE)
-    return body
-
-
-def ensure_domain_cta(body: str) -> str:
-    cta_phrase = CONFIG.get("brand_name") or CONFIG["domain"]
-    if cta_phrase.lower() in body.lower():
-        return body.strip()
-
-    cta_text = CONFIG.get("article_cta") or (
-        "Wenn Sie eine Marke für Legal-Tech, digitale Rechtsberatung oder "
-        "Mandantenvermittlung in Deutschland aufbauen möchten, kann "
-        f"**{cta_phrase}** eine starke und einprägsame Domain für Ihr Projekt sein."
-    )
-    cta = "\n\n---\n\n" + cta_text
-    return body.strip() + cta
-
-
-def normalize_article(article: str, image_path: str = "") -> str:
-    article = extract_markdown_block(article)
-
-    if "---" not in article:
-        raise ValueError("No frontmatter found")
-
-    article = article[article.find("---"):].strip()
-    parts = article.split("---", 2)
-
-    if len(parts) < 3:
-        raise ValueError("Invalid frontmatter structure")
-
-    raw_frontmatter = parts[1].strip()
-    body = parts[2].strip()
-
-    def grab(pattern: str, default: str = "") -> str:
-        m = re.search(pattern, raw_frontmatter, re.MULTILINE)
-        return m.group(1).strip() if m else default
-
-    title = grab(r'^title:\s*["\']?(.*?)["\']?$') or f"{KEYWORD} – Ratgeber und Tipps"
-    description = grab(r'^description:\s*["\']?(.*?)["\']?$') or f"Erfahren Sie mehr über {KEYWORD} auf {CONFIG['domain']}."
-    keywords_line = grab(r'^keywords:\s*(.*?)$')
-    keywords_line = normalize_keywords_line(keywords_line, KEYWORD)
-
-    body = strip_junk_prefix(body)
-    body = strip_frontmatter_lines_from_body(body)
-    body = re.sub(r'\n{3,}', '\n\n', body).strip()
-    body = ensure_domain_cta(body)
-
-    image_block = f'image: "{image_path}"\n' if image_path else ""
-
-    clean = f"""---
-title: "{title}"
-date: "{TODAY}"
-description: "{description}"
-keywords: {keywords_line}
-{image_block}---
-
-{body}
-"""
-    return clean
-
-
-def keyword_count(text: str, keyword: str) -> int:
-    return text.lower().count(keyword.lower())
-
-
-def text_similarity(a: str, b: str) -> float:
-    if not a or not b:
-        return 0.0
-    return SequenceMatcher(None, a.lower(), b.lower()).ratio()
-
-
-def detect_angle_from_title(title: str) -> str:
-    t = (title or "").lower()
-    angle_signals = {
-        "how-to": ["wie", "so", "how", "anleitung"],
-        "guide": ["guide", "ratgeber", "leitfaden"],
-        "checklist": ["checklist", "checkliste"],
-        "comparison": ["vergleich", "vs", "oder"],
-        "mistakes": ["fehler", "mistake", "vermeiden"],
-        "costs": ["kosten", "preis", "pricing"],
-        "best practices": ["best practice", "bewährt", "tipps"],
-        "trends": ["trend", "zukunft", "future"],
-        "faq": ["faq", "fragen", "fragen und antworten"],
-        "decision framework": ["entscheidung", "entscheiden", "framework"],
-    }
-    for angle, signals in angle_signals.items():
-        if any(signal in t for signal in signals):
-            return angle
-    return "guide"
-
-
-def normalize_bucket_name(raw: str) -> str:
-    if not raw:
-        return "informational"
-    cleaned = str(raw).strip()
-    return BUCKET_ALIASES.get(cleaned.lower(), cleaned)
-
-
-def configured_topic_buckets() -> list[str]:
-    configured = CONFIG.get("topic_buckets")
-    defaults = list(DEFAULT_BUCKET_ANGLE_MAP.keys())
-    if not configured:
-        return defaults
-
-    normalized = [normalize_bucket_name(item) for item in configured]
-    normalized = [item for item in normalized if item]
-    return normalized or defaults
-
-
-def parse_keywords_from_line(raw: str) -> list[str]:
-    if not raw:
-        return []
-    raw = raw.strip()
-    if raw.startswith("[") and raw.endswith("]"):
-        raw = raw[1:-1]
-    parts = [p.strip().strip('"\'') for p in raw.split(",")]
-    return [p for p in parts if p]
-
-
-def infer_bucket_from_title(title: str) -> str:
-    t = (title or "").lower()
-    if any(token in t for token in ["kosten", "preis", "pricing"]):
-        return "costs"
-    if any(token in t for token in ["vergleich", "vs"]):
-        return "comparison"
-    if any(token in t for token in ["checklist", "checkliste", "wie", "how", "anleitung"]):
-        return "checklist/how-to"
-    if any(token in t for token in ["fehler", "vermeiden", "mistake"]):
-        return "mistakes"
-    if any(token in t for token in ["faq", "häufige", "fragen"]):
-        return "FAQ"
-    if any(token in t for token in ["trend", "zukunft", "future"]):
-        return "trends"
-    if any(token in t for token in ["tool", "software", "plattform"]):
-        return "tools/platforms"
-    if CONFIG.get("geo", "").lower() in t:
-        return "local topics"
-    return "informational"
-
-
-def infer_intent_fingerprint(title: str, bucket: str, angle: str) -> str:
-    cleaned = re.sub(r"[^a-zA-Z0-9äöüÄÖÜß\s-]", " ", (title or "").lower())
-    tokens = [t for t in re.split(r"[\s-]+", cleaned) if len(t) > 3]
-    stop_words = {
-        "eine", "einer", "eines", "einen", "oder", "und", "fuer", "für", "with", "from",
-        "der", "die", "das", "den", "dem", "des", "wie", "so", "guide", "ratgeber", "tipps",
-        "deutschland", "online", "finden", "besten", "best", "checklist", "checkliste",
-    }
-    core = [tok for tok in tokens if tok not in stop_words][:5]
-    return "|".join([bucket, angle] + core)
-
-
-def read_recent_posts(limit: int | None = None) -> list[dict]:
+def article_stats() -> tuple[int, int, int]:
+    total = pillar = needs_review = 0
     POSTS_DIR.mkdir(parents=True, exist_ok=True)
-    memory_limit = limit or int(CONFIG.get("recent_posts_memory_limit") or 30)
-    posts = sorted(POSTS_DIR.glob("*.md"), key=lambda p: p.stat().st_mtime, reverse=True)[:memory_limit]
-
-    recent = []
-    for path in posts:
-        content = path.read_text(encoding="utf-8", errors="ignore")
-        parsed, _ = parse_frontmatter(content)
-        if not parsed:
-            continue
-        title = parsed.get("title", "")
-        slug = path.stem.split("-", 3)[-1] if "-" in path.stem else path.stem
-        bucket = infer_bucket_from_title(title)
-        angle = detect_angle_from_title(title)
-        recent.append(
-            {
-                "path": path,
-                "title": title,
-                "slug": slug,
-                "bucket": bucket,
-                "angle": angle,
-                "intent": infer_intent_fingerprint(title, bucket, angle),
-                "keywords": parse_keywords_from_line(parsed.get("keywords_line", "")),
-            }
-        )
-    return recent
-
-
-def pick_next_bucket_and_angle(recent_posts: list[dict]) -> tuple[str, str]:
-    buckets = configured_topic_buckets()
-    angles = CONFIG.get("title_angle_patterns") or ["guide", "how-to"]
-
-    bucket_counts = {bucket: 0 for bucket in buckets}
-    for post in recent_posts:
-        normalized_bucket = normalize_bucket_name(post["bucket"])
-        if normalized_bucket in bucket_counts:
-            bucket_counts[normalized_bucket] += 1
-
-    last_bucket = normalize_bucket_name(recent_posts[0]["bucket"]) if recent_posts else None
-    if last_bucket in bucket_counts and len(bucket_counts) > 1:
-        bucket_counts[last_bucket] += 2
-
-    next_bucket = min(bucket_counts, key=lambda b: bucket_counts[b]) if bucket_counts else buckets[0]
-
-    candidate_angles = [a for a in DEFAULT_BUCKET_ANGLE_MAP.get(next_bucket, []) if a in angles] or angles
-    angle_counts = {angle: 0 for angle in candidate_angles}
-    for post in recent_posts:
-        if post["angle"] in angle_counts:
-            angle_counts[post["angle"]] += 1
-    next_angle = min(angle_counts, key=lambda a: angle_counts[a]) if angle_counts else candidate_angles[0]
-    return next_bucket, next_angle
-
-
-def is_too_similar_to_recent(
-    title: str,
-    slug: str,
-    keyword: str,
-    bucket: str,
-    angle: str,
-    recent_posts: list[dict],
-) -> tuple[bool, str]:
-    title_threshold = float(CONFIG.get("title_similarity_threshold") or 0.75)
-    intent_threshold = float(CONFIG.get("intent_similarity_threshold") or 0.70)
-    slug_threshold = float(CONFIG.get("slug_similarity_threshold") or 0.70)
-    intent = infer_intent_fingerprint(title, bucket, angle)
-    normalized_bucket = normalize_bucket_name(bucket)
-
-    for post in recent_posts:
-        title_ratio = text_similarity(title, post["title"])
-        slug_ratio = text_similarity(slug, post["slug"])
-        post_bucket = normalize_bucket_name(post["bucket"])
-        same_intent = post_bucket == normalized_bucket and post["angle"] == angle
-        intent_ratio = text_similarity(intent, post.get("intent", ""))
-        keyword_ratio = max([text_similarity(keyword, k) for k in post.get("keywords", [])] or [0.0])
-
-        if title_ratio >= title_threshold:
-            return True, f"title too similar to {post['path'].name} ({title_ratio:.2f})"
-        if slug_ratio >= slug_threshold:
-            return True, f"slug too similar to {post['path'].name} ({slug_ratio:.2f})"
-        if keyword_ratio >= intent_threshold and same_intent:
-            return True, f"keyword intent too similar to {post['path'].name} ({keyword_ratio:.2f})"
-        if same_intent and max(title_ratio, slug_ratio) >= intent_threshold:
-            return True, f"intent too similar to {post['path'].name}"
-        if intent_ratio >= intent_threshold:
-            return True, f"intent fingerprint too similar to {post['path'].name} ({intent_ratio:.2f})"
-
-    return False, ""
-
-
-def is_duplicate(new_article: str, threshold: float = 0.70) -> bool:
-    POSTS_DIR.mkdir(parents=True, exist_ok=True)
-
     for path in POSTS_DIR.glob("*.md"):
-        old = path.read_text(encoding="utf-8", errors="ignore")
-        ratio = SequenceMatcher(None, old, new_article).ratio()
-        if ratio > threshold:
-            return True
-
-    return False
-
-
-def generate_prompt(keyword: str, bucket: str, angle: str, recent_posts: list[dict]) -> str:
-    language_name, language_style = language_prompt_config(CONFIG.get("language", "de"))
-    brand_positioning = get_brand_positioning()
-    seo_hints = CONFIG.get("seo_keyword_hints") or ""
-
-    recent_titles = "\n".join(
-        f"- {post['title']} [{normalize_bucket_name(post['bucket'])} | {post['angle']}]"
-        for post in recent_posts[:12]
-    ) or "- Keine jüngeren Beiträge vorhanden"
-    recent_buckets = ", ".join(normalize_bucket_name(post["bucket"]) for post in recent_posts[:10]) or "(keine)"
-    recent_angles = ", ".join(post["angle"] for post in recent_posts[:10]) or "(keine)"
-
-    return f"""
-Du bist ein professioneller {language_style} SEO-Content-Writer mit Fokus auf hochwertige, natürlich klingende Fachartikel.
-
-Deine Aufgabe:
-Schreibe einen starken SEO-Artikel für die Domain {CONFIG["domain"]}.
-
-WICHTIGE REGELN:
-- Schreibe ausschließlich in {language_name}.
-- Gib nur reines Markdown zurück.
-- Keine Erklärungen vor oder nach dem Artikel.
-- Beginne direkt mit gültigem YAML-Frontmatter.
-- Verwende exakt dieses Datumsformat: "{TODAY}".
-- Der Text muss natürlich, vertrauenswürdig und menschlich klingen.
-- Keine generischen KI-Formulierungen und kein unnötiger Fülltext.
-
-KONTEXT:
-- Domain: {CONFIG["domain"]}
-- Marke: {CONFIG["brand_name"]}
-- Nische: {CONFIG["niche"]}
-- Region: {CONFIG["geo"]}
-- Sprache: {language_name}
-- Zielgruppe: {CONFIG["audience"]}
-- Brand Positioning: {brand_positioning}
-- Hauptkeyword: {keyword}
-- SEO Keyword-Hinweise: {seo_hints}
-- Ziel-Topic-Cluster: {bucket}
-- Ziel-Titelwinkel: {angle}
-- Kürzlich veröffentlichte Titel (nicht wiederholen):
-{recent_titles}
-- Kürzlich verwendete Buckets: {recent_buckets}
-- Kürzlich verwendete Titel-Winkel: {recent_angles}
-
-SEO-ZIEL:
-Der Artikel soll für Suchanfragen rund um das Hauptkeyword ranken und gleichzeitig zur Nische, Zielgruppe und Markenpositionierung passen.
-
-ANFORDERUNGEN:
-- Länge: 1100 bis 1400 Wörter
-- Struktur:
-  - 1 klare H1
-  - 4 bis 6 sinnvolle H2-Abschnitte
-  - kurze, starke Einleitung
-  - prägnantes Fazit
-- Verwende das Hauptkeyword natürlich etwa 3 bis 5 Mal.
-- Nutze sinnvolle semantische Begriffe und verwandte Suchintentionen.
-- Schreibe im Stil: {CONFIG["article_tone"]}.
-- Vermeide Wiederholungen.
-- Wähle eine klar unterscheidbare Suchintention im Cluster "{bucket}".
-- Der Titel muss den Winkel "{angle}" deutlich widerspiegeln.
-- Wähle einen frischen Unteraspekt und vermeide identische Nutzenversprechen zu jüngsten Artikeln.
-- Gib konkrete, praktische Informationen statt leerer Allgemeinplätze.
-- Der Artikel darf nicht mit Meta-Kommentaren beginnen.
-- Schreibe keinen Satz wie "Hier ist der Artikel" oder ähnliche Hinweise.
-
-WICHTIG FÜR DIE DOMAIN-STRATEGIE:
-Baue am Ende des Artikels eine kurze und natürliche Erwähnung ein, dass die Domain {CONFIG["domain"]} für die Zielgruppe in dieser Nische eine interessante Marke sein kann.
-
-FORMAT:
----
-title: "..."
-date: "{TODAY}"
-description: "..."
-keywords: ["{keyword}"]
----
-
-# Titel
-
-Artikeltext...
-""".strip()
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        fm, _ = parse_frontmatter(text)
+        total += 1
+        if fm.get("pillar", "false").lower() == "true":
+            pillar += 1
+        if fm.get("needs_review", "false").lower() == "true":
+            needs_review += 1
+    return total, pillar, needs_review
 
 
-def review_prompt(article: str, keyword: str) -> str:
-    language_name, _ = language_prompt_config(CONFIG.get("language", "de"))
-    return f"""
-Du bist ein strenger SEO-Editor.
-
-Überarbeite den folgenden Artikel.
-
-REGELN:
-- Behalte YAML-Frontmatter.
-- Behalte die Sprache: {language_name}.
-- Gib nur Markdown zurück.
-- Verbessere Lesbarkeit, Klarheit und Natürlichkeit.
-- Entferne Füllsätze und typische KI-Formulierungen.
-- Entferne jede Meta-Erklärung wie "Hier ist der optimierte Artikel".
-- Es darf kein YAML-Text doppelt im Fließtext erscheinen.
-- Stelle sicher, dass das Hauptkeyword "{keyword}" natürlich ungefähr 3 bis 5 Mal vorkommt.
-- Erhalte die Struktur des Artikels.
-- Ändere das Datum nicht.
-- Lasse den Text professionell und glaubwürdig wirken.
-- Achte darauf, dass der Schluss die Domain natürlich und dezent erwähnt.
-
-ARTIKEL:
-{article}
-""".strip()
+def choose_publish_count(now: dt.datetime) -> int:
+    weekday_base = {0: 3, 1: 0, 2: 1, 3: 2, 4: 1, 5: 0, 6: 1}
+    base = weekday_base[now.weekday()]
+    if base == 0:
+        return random.choice([0, 0, 1])
+    return max(0, min(3, base + random.choice([-1, 0, 1])))
 
 
-def save_article(article: str, title: str) -> Path:
-    POSTS_DIR.mkdir(parents=True, exist_ok=True)
+def build_stage1_system_prompt() -> str:
+    return """You are a professional German SEO content writer.
+Write a high-quality article in German for the given keyword.
+Requirements:
+- Length: randomly choose between SHORT (700-900 words), MEDIUM (1200-1600 words), or LONG (2200-3000 words)
+- Vary the article structure each time. Use one of these structures randomly:
+  Option A: H1 > H2 > H2 > H2 > FAQ > Conclusion
+  Option B: Introduction > H2 > Table > H3 > List > Conclusion
+  Option C: H1 > H2 > Comparison table > H2 > FAQ > H2 > Conclusion
+- Always include at least 2 of: tables, bullet lists, statistics, quotes, FAQ section
+- Cover all SEO entities related to the topic (costs, process, providers, legal info, alternatives)
+- Write naturally, vary sentence length, avoid repetition
+- Output in markdown format"""
+
+
+def build_stage2_system_prompt() -> str:
+    return """You are an SEO editor. Review the following German article and return an improved version.
+Tasks:
+- Remove repetition
+- Improve headings for SEO
+- Improve readability and paragraph flow
+- Add any missing SEO entities (cost, process, legal, providers, alternatives)
+- Add or improve FAQ section (minimum 3 questions)
+- Suggest and insert internal link placeholders as: [INTERNAL_LINK: keyword]
+- Return only the improved article in markdown, no explanations"""
+
+
+def build_stage3_system_prompt() -> str:
+    return """You are a native German language editor.
+Review the following article:
+- Fix all grammar errors
+- Improve sentence style and flow
+- Make the text sound natural and human-written
+- Do not change the structure, headings, or SEO content
+- Return only the corrected article in markdown, no explanations"""
+
+
+def build_frontmatter(title: str, slug: str, description: str, keywords: list[str], body: str, pillar: bool, needs_review: bool) -> str:
+    today = dt.datetime.utcnow().strftime("%Y-%m-%d")
+    word_count = len(re.findall(r"\w+", body))
+    keywords_json = json.dumps(keywords, ensure_ascii=False)
+    stages = json.dumps(["claude-3.5-sonnet", "deepseek-r1", "llama-3.3-70b"], ensure_ascii=False)
+    return (
+        "---\n"
+        f'title: "{title}"\n'
+        f"date: {today}\n"
+        f"lastmod: {today}\n"
+        "draft: false\n"
+        f'slug: "{slug}"\n'
+        f'description: "{description}"\n'
+        f"keywords: {keywords_json}\n"
+        f"pillar: {'true' if pillar else 'false'}\n"
+        f"needs_review: {'true' if needs_review else 'false'}\n"
+        f"word_count: {word_count}\n"
+        f"pipeline_stages: {stages}\n"
+        "---\n\n"
+    )
+
+
+def clean_markdown(md: str) -> str:
+    md = strip_code_fence(md)
+    if md.startswith("---"):
+        _, body = parse_frontmatter(md)
+        return body.strip()
+    return md.strip()
+
+
+def extract_title(body: str, keyword: str) -> str:
+    m = re.search(r"^#\s+(.+)$", body, flags=re.MULTILINE)
+    if m:
+        return m.group(1).strip()
+    return f"{keyword} – Ratgeber"
+
+
+
+
+def select_keyword(args_keyword: str | None, tracker: KeywordTracker) -> str:
+    if args_keyword:
+        return args_keyword
+    keyword = tracker.get_next_keyword()
+    if keyword:
+        return keyword
+    fallback = CONFIG.get("keywords") or ["Rechtsberatung online"]
+    logger.warning("Keyword queue empty; using config fallback")
+    return random.choice(fallback)
+
+
+def generate_one(keyword: str, force_pillar: bool, needs_review: bool, dry_run: bool) -> Path | None:
+    if not OPENROUTER_API_KEY or not GROQ_API_KEY:
+        raise RuntimeError("OPENROUTER_API_KEY and GROQ_API_KEY are required")
+
+    length_hint = "3000-4000 words" if force_pillar else "700-3000 words"
+    stage1_user = (
+        f"Keyword: {keyword}\n"
+        f"Brand: {CONFIG.get('brand_name', '')}\n"
+        f"Domain: {CONFIG.get('domain', '')}\n"
+        f"Please ensure roughly {length_hint}."
+    )
+    stage1 = call_with_retry(OPENROUTER_URL, OPENROUTER_API_KEY, STAGE_1_MODEL, build_stage1_system_prompt(), stage1_user)
+    stage2 = call_with_retry(GROQ_URL, GROQ_API_KEY, STAGE_2_MODEL, build_stage2_system_prompt(), stage1)
+    stage3 = call_with_retry(GROQ_URL, GROQ_API_KEY, STAGE_3_MODEL, build_stage3_system_prompt(), stage2)
+
+    body = clean_markdown(stage3)
+    body = resolve_internal_links(body, min_links=3, max_links=5)
+
+    title = extract_title(body, keyword)
     slug = slugify(title) or f"artikel-{random.randint(1000, 9999)}"
-    filename = POSTS_DIR / f"{TODAY}-{slug}.md"
-    filename.write_text(article, encoding="utf-8")
-    return filename
+    description = f"Aktueller Überblick zu {keyword}: Kosten, Ablauf, Anbieter und Alternativen."
+    article = build_frontmatter(title, slug, description, [keyword], body, force_pillar, needs_review) + body + "\n"
+
+    if dry_run:
+        logger.info("Dry-run article generated keyword=%s", keyword)
+        return None
+
+    today = dt.datetime.utcnow().strftime("%Y-%m-%d")
+    out = POSTS_DIR / f"{today}-{slug}.md"
+    out.write_text(article, encoding="utf-8")
+    logger.info("Saved article %s", out)
+    return out
 
 
-
-def run_dry_run(keyword: str):
-    recent_posts = read_recent_posts()
-    bucket, angle = pick_next_bucket_and_angle(recent_posts)
-    print("=== DRY RUN ===")
-    print(f"Config path: {CONFIG_PATH}")
-    print("Domain:", CONFIG.get("domain"))
-    print("Brand:", CONFIG.get("brand_name"))
-    print("Niche:", CONFIG.get("niche"))
-    print("Geo:", CONFIG.get("geo"))
-    print("Language:", CONFIG.get("language"))
-    print("Audience:", CONFIG.get("audience"))
-    print("Tone:", CONFIG.get("article_tone"))
-    print("Keyword:", keyword)
-    print("Selected topic bucket:", bucket)
-    print("Selected angle pattern:", angle)
-    print("\n--- Prompt Preview ---\n")
-    print(generate_prompt(keyword, bucket, angle, recent_posts))
-
-
-def parse_args():
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dry-run", action="store_true", help="Print config/prompt and exit")
-    parser.add_argument("--keyword", default=None, help="Override random keyword")
+    parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--keyword", default=None)
+    parser.add_argument("--batch-mode", action="store_true", help="Use humanized daily publish counts")
+    parser.add_argument("--count", type=int, default=None, help="Force number of generated articles")
     return parser.parse_args()
 
 
-def _is_auth_error(err: Exception) -> bool:
-    message = str(err).lower()
-    auth_signals = [
-        "401",
-        "missing authentication header",
-        "invalid api key",
-        "unauthorized",
-        "openrouter_key is required",
-    ]
-    return any(signal in message for signal in auth_signals)
-
-def main():
+def main() -> None:
     args = parse_args()
-    selected_keyword = args.keyword or KEYWORD
-    recent_posts = read_recent_posts()
-    selected_bucket, selected_angle = pick_next_bucket_and_angle(recent_posts)
+    POSTS_DIR.mkdir(parents=True, exist_ok=True)
 
-    if args.dry_run:
-        run_dry_run(selected_keyword)
+    now = dt.datetime.utcnow()
+    tracker = KeywordTracker()
+
+    if args.count is not None:
+        target_count = max(0, min(3, args.count))
+    elif args.batch_mode:
+        target_count = choose_publish_count(now)
+    else:
+        target_count = 1
+
+    logger.info("Run started target_count=%s batch_mode=%s", target_count, args.batch_mode)
+    if target_count == 0:
+        logger.info("No publication today (humanized schedule)")
         return
 
-    if not OPENROUTER_KEY or not OPENROUTER_KEY.strip():
-        print("Skipping article generation: OPENROUTER_KEY is missing.")
-        print("Hint: set OPENROUTER_KEY in environment/secrets, or run with --dry-run for prompt preview.")
-        return
+    total, _pillar_count, review_count = article_stats()
 
-    print(f"Keyword selected: {selected_keyword}")
-    print(f"Topic bucket selected: {selected_bucket}")
-    print(f"Title angle selected: {selected_angle}")
+    for i in range(target_count):
+        current_index = total + i + 1
+        force_pillar = current_index % 10 == 0
 
-    for attempt in range(6):
-        try:
-            draft = call_openrouter(generate_prompt(selected_keyword, selected_bucket, selected_angle, recent_posts), WRITER_MODEL)
-            draft = normalize_article(draft)
+        projected_total = total + i + 1
+        projected_review = review_count + (1 if (review_count / projected_total) < 0.2 else 0)
+        needs_review = (projected_review / projected_total) <= 0.2 and random.random() < 0.5
 
-            if not has_valid_frontmatter(draft):
-                raise ValueError("Draft frontmatter invalid")
+        keyword = select_keyword(args.keyword, tracker)
+        delay = random.randint(0, 14400)
+        logger.info("Sleeping before publish delay_seconds=%s", delay)
+        time.sleep(delay)
 
-            reviewed = call_openrouter(review_prompt(draft, selected_keyword), REVIEW_MODEL)
-            reviewed = normalize_article(reviewed)
+        path = generate_one(keyword, force_pillar=force_pillar, needs_review=needs_review, dry_run=args.dry_run)
+        if path and not args.keyword:
+            tracker.mark_as_used(keyword)
+        logger.info("Article completed path=%s pillar=%s needs_review=%s", path, force_pillar, needs_review)
 
-            if not has_valid_frontmatter(reviewed):
-                print("Reviewed version invalid, using draft.")
-                reviewed = draft
-
-            count = keyword_count(reviewed, selected_keyword)
-            if count < 2 or count > 6:
-                print(f"Keyword count out of preferred range: {count}")
-
-            if is_duplicate(reviewed):
-                raise ValueError("Generated article is too similar to an existing post")
-
-            parsed, _ = parse_frontmatter(reviewed)
-            title = parsed["title"] if parsed else f"artikel-{random.randint(1000, 9999)}"
-            slug = slugify(title) or f"artikel-{random.randint(1000, 9999)}"
-
-            title_angle = detect_angle_from_title(title)
-            title_bucket = infer_bucket_from_title(title)
-            too_similar, reason = is_too_similar_to_recent(
-                title,
-                slug,
-                selected_keyword,
-                title_bucket,
-                title_angle,
-                recent_posts,
-            )
-            if too_similar:
-                raise ValueError(f"Rejected due to duplicate-intent guard: {reason}")
-
-            image_path = ""
-            try:
-                image_path = fetch_unsplash_image(selected_keyword, slug)
-            except Exception as image_err:
-                print(f"Image fetch skipped: {image_err}")
-
-            reviewed = normalize_article(reviewed, image_path=image_path)
-
-            saved_path = save_article(reviewed, title)
-            print(f"Saved: {saved_path}")
-            if image_path:
-                print(f"Image: {image_path}")
-            return
-
-        except Exception as e:
-            print(f"Attempt {attempt + 1} failed: {e}")
-            if _is_auth_error(e):
-                raise SystemExit("OpenRouter authentication failed. Check OPENROUTER_KEY secret/environment value.")
-            time.sleep(2 ** attempt)
-
-    raise Exception("Failed after 6 attempts")
+    if not args.dry_run:
+        logger.info("Pinging sitemap after generation")
+        ping_search_engines()
+        stats = tracker.get_stats()
+        logger.info("Keyword stats queue_remaining=%s total_used=%s", stats["queue_remaining"], stats["total_used"])
 
 
 if __name__ == "__main__":
