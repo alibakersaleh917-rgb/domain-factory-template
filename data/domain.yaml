@@ -43,7 +43,7 @@ cta:
 analytics:
   event_name: "domain_click"
   event_category: "engagement"
-  ga_measurement_id: "G-BQ0MKG6PFD"
+  ga_measurement_id: "G-BQQMKG6PFD"
 
 content:
   article_tone: "informativ, klar und professionell"

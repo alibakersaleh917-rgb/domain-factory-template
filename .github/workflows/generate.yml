@@ -1,0 +1,120 @@
+name: Generate Articles Pipeline
+
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+    inputs:
+      domain_config_path:
+        description: "Path to domain config file (YAML/JSON)"
+        required: false
+        default: "data/domain.yaml"
+      dry_run:
+        description: "Run generator in dry-run mode"
+        required: false
+        default: false
+        type: boolean
+      count:
+        description: "Optional fixed number of articles (0-3)"
+        required: false
+        default: ""
+      allow_delay:
+        description: "Enable randomized delay (0-4h) before publish"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+env:
+  DOMAIN_CONFIG_PATH: ${{ github.event.inputs.domain_config_path || 'data/domain.yaml' }}
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Setup Python (with pip cache)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: 'requirements.txt'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Validate required secrets
+        run: python scripts/check_generation_env.py --required "OPENROUTER_API_KEY,GROQ_API_KEY"
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+
+      - name: Validate domain/theme config
+        run: python scripts/validate_config.py
+
+      - name: Initialize keyword queue if missing
+        run: |
+          if [ ! -s keywords/queue.txt ]; then
+            python scripts/init_keywords.py
+          else
+            echo "keywords/queue.txt already initialized"
+          fi
+
+      - name: Generate articles (dry-run)
+        if: ${{ github.event.inputs.dry_run == 'true' }}
+        run: python scripts/generate_article.py --dry-run --batch-mode
+        env:
+          DOMAIN_CONFIG_PATH: ${{ env.DOMAIN_CONFIG_PATH }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+
+      - name: Generate articles (humanized schedule)
+        if: ${{ github.event.inputs.dry_run != 'true' && github.event.inputs.count == '' && github.event.inputs.allow_delay != 'true' }}
+        run: python scripts/generate_article.py --batch-mode
+        env:
+          DOMAIN_CONFIG_PATH: ${{ env.DOMAIN_CONFIG_PATH }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+
+      - name: Generate articles (humanized + delay)
+        if: ${{ github.event.inputs.dry_run != 'true' && github.event.inputs.count == '' && github.event.inputs.allow_delay == 'true' }}
+        run: python scripts/generate_article.py --batch-mode --allow-delay
+        env:
+          DOMAIN_CONFIG_PATH: ${{ env.DOMAIN_CONFIG_PATH }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+
+      - name: Generate articles (fixed count)
+        if: ${{ github.event.inputs.dry_run != 'true' && github.event.inputs.count != '' && github.event.inputs.allow_delay != 'true' }}
+        run: python scripts/generate_article.py --count "${{ github.event.inputs.count }}"
+        env:
+          DOMAIN_CONFIG_PATH: ${{ env.DOMAIN_CONFIG_PATH }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+
+      - name: Generate articles (fixed count + delay)
+        if: ${{ github.event.inputs.dry_run != 'true' && github.event.inputs.count != '' && github.event.inputs.allow_delay == 'true' }}
+        run: python scripts/generate_article.py --count "${{ github.event.inputs.count }}" --allow-delay
+        env:
+          DOMAIN_CONFIG_PATH: ${{ env.DOMAIN_CONFIG_PATH }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+
+      - name: Commit and push content
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: |
+          git config user.name "AutoBot"
+          git config user.email "bot@noreply.com"
+          git add content/posts/ logs/ keywords/ || true
+          if git diff --cached --quiet; then
+            echo "No content/log changes to commit."
+            exit 0
+          fi
+          git commit -m "auto: generation pipeline $(date +%Y-%m-%d)"
+          git push
