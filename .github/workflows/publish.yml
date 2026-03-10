@@ -10,6 +10,10 @@ on:
         description: "Path to domain config file (YAML/JSON)"
         required: false
         default: "data/domain.yaml"
+      keyword:
+        description: "Optional explicit keyword override"
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -18,7 +22,7 @@ env:
   DOMAIN_CONFIG_PATH: ${{ github.event.inputs.domain_config_path || 'data/domain.yaml' }}
 
 jobs:
-  generate:
+  publish-single:
     runs-on: ubuntu-latest
 
     steps:
@@ -26,90 +30,45 @@ jobs:
         with:
           submodules: true
 
-      - name: Fail on unresolved merge conflict markers
-        run: |
-          if grep -R -n -E '^(<<<<<<<|=======|>>>>>>>)' -- .; then
-            echo "Unresolved merge conflict markers found."
-            exit 1
-          fi
-
-      - uses: actions/setup-python@v5
+      - name: Setup Python (with pip cache)
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: 'requirements.txt'
 
       - name: Install dependencies
-        run: pip install requests
+        run: pip install -r requirements.txt
+
+      - name: Validate required secrets
+        run: python scripts/check_generation_env.py --required "OPENROUTER_API_KEY,GROQ_API_KEY"
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
 
       - name: Validate domain/theme config
         run: python scripts/validate_config.py
 
-      - name: Setup Hugo
-        uses: peaceiris/actions-hugo@v3
-        with:
-          hugo-version: 'latest'
-          extended: true
-
-      - name: Hugo smoke build
-        run: hugo --gc --minify
-
-      - name: Generate article
-        run: python scripts/generate_article.py
-        env:
-          OPENROUTER_KEY: ${{ secrets.OPENROUTER_KEY }}
-          UNSPLASH_KEY: ${{ secrets.UNSPLASH_KEY }}
-          DOMAIN_CONFIG_PATH: ${{ env.DOMAIN_CONFIG_PATH }}
-
-      - name: Get latest article info
-        id: article
-        env:
-          DOMAIN_CONFIG_PATH: ${{ env.DOMAIN_CONFIG_PATH }}
+      - name: Generate single article (fast path)
         run: |
-          LATEST_FILE=$(ls -t content/posts/*.md | head -n 1)
-          echo "latest_file=$LATEST_FILE" >> "$GITHUB_OUTPUT"
+          if [ -n "${{ github.event.inputs.keyword }}" ]; then
+            python scripts/generate_article.py --count 1 --keyword "${{ github.event.inputs.keyword }}"
+          else
+            python scripts/generate_article.py --count 1
+          fi
+        env:
+          DOMAIN_CONFIG_PATH: ${{ env.DOMAIN_CONFIG_PATH }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
 
-          TITLE=$(grep -m 1 '^title:' "$LATEST_FILE" | sed 's/title: "//; s/"$//')
-          FILENAME=$(basename "$LATEST_FILE" .md)
-
-          DOMAIN=$(python scripts/read_domain_meta.py --config "${DOMAIN_CONFIG_PATH}" --field domain)
-          BRAND_NAME=$(python scripts/read_domain_meta.py --config "${DOMAIN_CONFIG_PATH}" --field brand_name)
-          URL="https://${DOMAIN}/posts/${FILENAME}/"
-
-          echo "title=$TITLE" >> "$GITHUB_OUTPUT"
-          echo "url=$URL" >> "$GITHUB_OUTPUT"
-          echo "brand_name=$BRAND_NAME" >> "$GITHUB_OUTPUT"
-          echo "domain=$DOMAIN" >> "$GITHUB_OUTPUT"
-
-      - name: Commit and push
+      - name: Commit and push if changed
         run: |
           git config user.name "AutoBot"
           git config user.email "bot@noreply.com"
-          git add content/posts/ static/images/ || true
-          if ! git diff --cached --quiet; then
-            git commit -m "auto: article $(date +%Y-%m-%d)"
-            git push
-          else
-            echo "No content/image changes to commit."
+          git add content/posts/ logs/ keywords/ || true
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
           fi
-
-      - name: Send article email
-        if: ${{ steps.article.outputs.title != '' }}
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.gmail.com
-          server_port: 587
-          username: ${{ secrets.GMAIL_USER }}
-          password: ${{ secrets.GMAIL_APP_PASSWORD }}
-          subject: "Neuer Artikel auf ${{ steps.article.outputs.brand_name }}"
-          to: ${{ secrets.GMAIL_USER }}
-          from: ${{ secrets.GMAIL_USER }}
-          body: |
-            Ein neuer Artikel wurde veröffentlicht.
-
-            Domain:
-            ${{ steps.article.outputs.domain }}
-
-            Titel:
-            ${{ steps.article.outputs.title }}
-
-            Link:
-            ${{ steps.article.outputs.url }}
+          git commit -m "auto: article $(date +%Y-%m-%d)"
+          git push
