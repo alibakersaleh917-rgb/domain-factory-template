@@ -25,8 +25,8 @@ POSTS_DIR = Path("content/posts")
 LOG_DIR = Path("logs")
 LOG_DIR.mkdir(parents=True, exist_ok=True)
 
-OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY") or os.environ.get("OPENROUTER_KEY", "")
-GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
+OPENROUTER_API_KEY = (os.environ.get("OPENROUTER_API_KEY") or os.environ.get("OPENROUTER_KEY", "")).strip()
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "").strip()
 
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
@@ -45,6 +45,18 @@ logger.addHandler(handler)
 def log_stage_duration(stage: str, started_at: float) -> None:
     logger.info("stage=%s duration_s=%.2f", stage, time.perf_counter() - started_at)
 
+
+def validate_api_key(key_name: str, key_value: str) -> str:
+    key = (key_value or "").strip()
+    if not key:
+        raise RuntimeError(f"{key_name} is missing or empty")
+    if key.startswith("Bearer "):
+        raise RuntimeError(f"{key_name} should NOT include the 'Bearer ' prefix")
+    if "\n" in key or "\r" in key:
+        raise RuntimeError(f"{key_name} contains newline characters")
+    if '"' in key or "'" in key:
+        raise RuntimeError(f"{key_name} should not contain quotes")
+    return key
 
 def slugify(text: str) -> str:
     text = text.lower().strip()
@@ -78,8 +90,10 @@ def strip_code_fence(text: str) -> str:
 
 
 def call_with_retry(url: str, api_key: str, model: str, system_prompt: str, user_prompt: str) -> str:
+    provider = "OpenRouter" if "openrouter.ai" in url else "Groq"
+    clean_key = validate_api_key("OPENROUTER_API_KEY" if provider == "OpenRouter" else "GROQ_API_KEY", api_key)
     headers = {
-        "Authorization": f"Bearer {api_key}",
+        "Authorization": f"Bearer {clean_key}",
         "Content-Type": "application/json",
     }
     payload = {
@@ -96,8 +110,12 @@ def call_with_retry(url: str, api_key: str, model: str, system_prompt: str, user
     for attempt in range(1, 4):
         try:
             resp = requests.post(url, headers=headers, json=payload, timeout=300)
+            if resp.status_code == 401:
+                if provider == "OpenRouter":
+                    raise RuntimeError("OpenRouter authentication failed. Check OPENROUTER_API_KEY secret.")
+                raise RuntimeError("Groq authentication failed. Check GROQ_API_KEY secret.")
             if resp.status_code >= 400:
-                raise RuntimeError(f"{resp.status_code} {resp.text[:500]}")
+                raise RuntimeError(f"{provider} API error {resp.status_code}: {resp.text[:500]}")
             data = resp.json()
             return data["choices"][0]["message"]["content"].strip()
         except Exception as exc:
@@ -218,8 +236,8 @@ def select_keyword(args_keyword: str | None, tracker: KeywordTracker) -> str:
 
 
 def generate_one(keyword: str, force_pillar: bool, needs_review: bool, dry_run: bool) -> Path | None:
-    if not OPENROUTER_API_KEY or not GROQ_API_KEY:
-        raise RuntimeError("OPENROUTER_API_KEY and GROQ_API_KEY are required")
+    validate_api_key("OPENROUTER_API_KEY", OPENROUTER_API_KEY)
+    validate_api_key("GROQ_API_KEY", GROQ_API_KEY)
 
     length_hint = "3000-4000 words" if force_pillar else "700-3000 words"
     stage1_user = (

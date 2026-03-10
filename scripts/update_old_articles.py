@@ -16,13 +16,26 @@ LOG_DIR.mkdir(parents=True, exist_ok=True)
 UPDATE_LOG = LOG_DIR / "update_log.txt"
 REPORT_LOG = LOG_DIR / "needs_update.txt"
 
-GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "").strip()
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 MODEL = "deepseek-r1-distill-llama-70b"
 FAQ_PROMPT = (
     "Read this German article and generate ONLY a new FAQ section with 3-5 relevant questions and answers. "
     "Return markdown only, starting with ## Häufig gestellte Fragen"
 )
+
+
+def validate_api_key(key_name: str, key_value: str) -> str:
+    key = (key_value or "").strip()
+    if not key:
+        raise RuntimeError(f"{key_name} is missing or empty")
+    if key.startswith("Bearer "):
+        raise RuntimeError(f"{key_name} should NOT include the 'Bearer ' prefix")
+    if "\n" in key or "\r" in key:
+        raise RuntimeError(f"{key_name} contains newline characters")
+    if '"' in key or "'" in key:
+        raise RuntimeError(f"{key_name} should not contain quotes")
+    return key
 
 
 def log(msg: str) -> None:
@@ -68,8 +81,7 @@ def internal_link_count(body: str) -> int:
 
 
 def call_groq(article_body: str) -> str:
-    if not GROQ_API_KEY:
-        raise RuntimeError("GROQ_API_KEY is required")
+    clean_key = validate_api_key("GROQ_API_KEY", GROQ_API_KEY)
 
     payload = {
         "model": MODEL,
@@ -86,12 +98,14 @@ def call_groq(article_body: str) -> str:
         try:
             resp = requests.post(
                 GROQ_URL,
-                headers={"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"},
+                headers={"Authorization": f"Bearer {clean_key}", "Content-Type": "application/json"},
                 json=payload,
                 timeout=240,
             )
+            if resp.status_code == 401:
+                raise RuntimeError("Groq authentication failed. Check GROQ_API_KEY secret.")
             if resp.status_code >= 400:
-                raise RuntimeError(f"{resp.status_code}: {resp.text[:400]}")
+                raise RuntimeError(f"Groq API error {resp.status_code}: {resp.text[:400]}")
             content = resp.json()["choices"][0]["message"]["content"].strip()
             return re.sub(r"```(?:markdown|md)?|```", "", content, flags=re.IGNORECASE).strip()
         except Exception as exc:
