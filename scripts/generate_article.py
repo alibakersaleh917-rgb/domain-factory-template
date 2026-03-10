@@ -270,6 +270,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--allow-delay", action="store_true", help="Enable randomized publish delay (opt-in)")
     return parser.parse_args()
 
+    if args.count is not None:
+        target_count = max(0, min(3, args.count))
+    elif args.batch_mode:
+        target_count = choose_publish_count(now)
+    else:
+        target_count = 1
 
 def main() -> None:
     args = parse_args()
