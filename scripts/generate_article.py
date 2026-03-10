@@ -71,7 +71,7 @@ BUCKET_ALIASES = {
 
 
 def call_openrouter(prompt: str, model: str, max_tokens: int = 2400) -> str:
-    if not OPENROUTER_KEY:
+    if not OPENROUTER_KEY or not OPENROUTER_KEY.strip():
         raise RuntimeError("OPENROUTER_KEY is required")
 
     import requests
@@ -756,6 +756,18 @@ def parse_args():
     parser.add_argument("--keyword", default=None, help="Override random keyword")
     return parser.parse_args()
 
+
+def _is_auth_error(err: Exception) -> bool:
+    message = str(err).lower()
+    auth_signals = [
+        "401",
+        "missing authentication header",
+        "invalid api key",
+        "unauthorized",
+        "openrouter_key is required",
+    ]
+    return any(signal in message for signal in auth_signals)
+
 def main():
     args = parse_args()
     selected_keyword = args.keyword or KEYWORD
@@ -764,6 +776,11 @@ def main():
 
     if args.dry_run:
         run_dry_run(selected_keyword)
+        return
+
+    if not OPENROUTER_KEY or not OPENROUTER_KEY.strip():
+        print("Skipping article generation: OPENROUTER_KEY is missing.")
+        print("Hint: set OPENROUTER_KEY in environment/secrets, or run with --dry-run for prompt preview.")
         return
 
     print(f"Keyword selected: {selected_keyword}")
@@ -825,9 +842,11 @@ def main():
 
         except Exception as e:
             print(f"Attempt {attempt + 1} failed: {e}")
+            if _is_auth_error(e):
+                raise SystemExit("OpenRouter authentication failed. Check OPENROUTER_KEY secret/environment value.")
             time.sleep(2 ** attempt)
 
-    raise Exception("Failed after 3 attempts")
+    raise Exception("Failed after 6 attempts")
 
 
 if __name__ == "__main__":
