@@ -19,7 +19,6 @@ REPORT_LOG = LOG_DIR / "needs_update.txt"
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "").strip()
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 MODEL = "llama-3.3-70b-versatile"
-FALLBACK_MODEL = "llama-3.3-70b-versatile"
 FAQ_PROMPT = (
     "Read this German article and generate ONLY a new FAQ section with 3-5 relevant questions and answers. "
     "Return markdown only, starting with ## Häufig gestellte Fragen"
