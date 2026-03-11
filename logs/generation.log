@@ -22,3 +22,22 @@
 2026-03-11 00:31:31,760 INFO stage=sitemap_ping duration_s=0.40
 2026-03-11 00:31:31,760 INFO Keyword stats queue_remaining=98 total_used=2
 2026-03-11 00:31:31,760 INFO stage=run_total duration_s=25.99
+2026-03-11 04:52:16,977 INFO Run started target_count=2 batch_mode=True allow_delay=False
+2026-03-11 04:52:37,812 INFO stage=stage1_write duration_s=20.83
+2026-03-11 04:52:40,768 INFO stage=stage2_seo_review duration_s=2.96
+2026-03-11 04:52:42,950 INFO stage=stage3_language_polish duration_s=2.18
+2026-03-11 04:52:42,957 INFO stage=stage4_internal_links duration_s=0.01
+2026-03-11 04:52:42,958 INFO Saved article content/posts/2026-03-11-fachanwalt-fuer-arbeitsrecht-in-berlin-expertenberatung-fuer-arbeitnehmer-und-arbeitgeber.md
+2026-03-11 04:52:42,958 INFO stage=article_iteration duration_s=25.98
+2026-03-11 04:52:42,958 INFO Article completed path=content/posts/2026-03-11-fachanwalt-fuer-arbeitsrecht-in-berlin-expertenberatung-fuer-arbeitnehmer-und-arbeitgeber.md pillar=False needs_review=True
+2026-03-11 04:53:03,797 INFO stage=stage1_write duration_s=20.84
+2026-03-11 04:53:06,403 INFO stage=stage2_seo_review duration_s=2.61
+2026-03-11 04:53:08,483 INFO stage=stage3_language_polish duration_s=2.08
+2026-03-11 04:53:08,489 INFO stage=stage4_internal_links duration_s=0.01
+2026-03-11 04:53:08,489 INFO Saved article content/posts/2026-03-11-mietrecht-in-muenchen-leitfaden-fuer-mieter-und-vermieter.md
+2026-03-11 04:53:08,489 INFO stage=article_iteration duration_s=25.53
+2026-03-11 04:53:08,490 INFO Article completed path=content/posts/2026-03-11-mietrecht-in-muenchen-leitfaden-fuer-mieter-und-vermieter.md pillar=False needs_review=True
+2026-03-11 04:53:08,490 INFO Pinging sitemap after generation
+2026-03-11 04:53:08,750 INFO stage=sitemap_ping duration_s=0.26
+2026-03-11 04:53:08,750 INFO Keyword stats queue_remaining=96 total_used=4
+2026-03-11 04:53:08,750 INFO stage=run_total duration_s=51.77

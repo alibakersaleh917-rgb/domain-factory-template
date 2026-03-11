@@ -2,3 +2,7 @@
 [2026-03-11T00:11:01.042267] USED: Rechtsanwalt online finden
 [2026-03-11T00:31:05.773430] SELECTED: Anwalt Erstberatung kostenlos
 [2026-03-11T00:31:31.358924] USED: Anwalt Erstberatung kostenlos
+[2026-03-11T04:52:16.977893] SELECTED: Fachanwalt Arbeitsrecht Berlin
+[2026-03-11T04:52:42.958833] USED: Fachanwalt Arbeitsrecht Berlin
+[2026-03-11T04:52:42.959011] SELECTED: Fachanwalt Mietrecht München
+[2026-03-11T04:53:08.490216] USED: Fachanwalt Mietrecht München
