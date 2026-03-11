@@ -32,8 +32,9 @@ OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 
 STAGE_1_MODEL = "anthropic/claude-3.5-sonnet"
-STAGE_2_MODEL = "deepseek-r1-distill-llama-70b"
+STAGE_2_MODEL = "llama-3.3-70b-versatile"
 STAGE_3_MODEL = "llama-3.3-70b-versatile"
+GROQ_FALLBACK_MODEL = "llama-3.3-70b-versatile"
 
 logger = logging.getLogger("generation")
 logger.setLevel(logging.INFO)
@@ -45,6 +46,18 @@ logger.addHandler(handler)
 def log_stage_duration(stage: str, started_at: float) -> None:
     logger.info("stage=%s duration_s=%.2f", stage, time.perf_counter() - started_at)
 
+
+def validate_api_key(key_name: str, key_value: str) -> str:
+    key = (key_value or "").strip()
+    if not key:
+        raise RuntimeError(f"{key_name} is missing or empty")
+    if key.startswith("Bearer "):
+        raise RuntimeError(f"{key_name} should NOT include the 'Bearer ' prefix")
+    if "\n" in key or "\r" in key:
+        raise RuntimeError(f"{key_name} contains newline characters")
+    if '"' in key or "'" in key:
+        raise RuntimeError(f"{key_name} should not contain quotes")
+    return key
 
 def validate_api_key(key_name: str, key_value: str) -> str:
     key = (key_value or "").strip()
@@ -96,34 +109,49 @@ def call_with_retry(url: str, api_key: str, model: str, system_prompt: str, user
         "Authorization": f"Bearer {clean_key}",
         "Content-Type": "application/json",
     }
-    payload = {
-        "model": model,
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
-        ],
-        "temperature": 0.7,
-    }
+
+    model_candidates = [model]
+    if provider == "Groq" and model != GROQ_FALLBACK_MODEL:
+        model_candidates.append(GROQ_FALLBACK_MODEL)
 
     import requests
 
-    for attempt in range(1, 4):
-        try:
-            resp = requests.post(url, headers=headers, json=payload, timeout=300)
-            if resp.status_code == 401:
-                if provider == "OpenRouter":
-                    raise RuntimeError("OpenRouter authentication failed. Check OPENROUTER_API_KEY secret.")
-                raise RuntimeError("Groq authentication failed. Check GROQ_API_KEY secret.")
-            if resp.status_code >= 400:
-                raise RuntimeError(f"{provider} API error {resp.status_code}: {resp.text[:500]}")
-            data = resp.json()
-            return data["choices"][0]["message"]["content"].strip()
-        except Exception as exc:
-            logger.warning("API call failed model=%s attempt=%s err=%s", model, attempt, exc)
-            if attempt >= 3:
-                raise
-            time.sleep(2**attempt)
-    raise RuntimeError("Unreachable")
+    for candidate_model in model_candidates:
+        payload = {
+            "model": candidate_model,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            "temperature": 0.7,
+        }
+
+        for attempt in range(1, 4):
+            try:
+                resp = requests.post(url, headers=headers, json=payload, timeout=300)
+                if resp.status_code == 401:
+                    if provider == "OpenRouter":
+                        raise RuntimeError("OpenRouter authentication failed. Check OPENROUTER_API_KEY secret.")
+                    raise RuntimeError("Groq authentication failed. Check GROQ_API_KEY secret.")
+
+                if resp.status_code == 400 and provider == "Groq" and "model_decommissioned" in (resp.text or ""):
+                    if candidate_model != GROQ_FALLBACK_MODEL:
+                        logger.warning("Groq model %s is decommissioned; retrying with fallback model %s", candidate_model, GROQ_FALLBACK_MODEL)
+                        break
+                    raise RuntimeError("Groq model decommissioned and fallback model unavailable. Update configured model.")
+
+                if resp.status_code >= 400:
+                    raise RuntimeError(f"{provider} API error {resp.status_code}: {resp.text[:500]}")
+
+                data = resp.json()
+                return data["choices"][0]["message"]["content"].strip()
+            except Exception as exc:
+                logger.warning("API call failed model=%s attempt=%s err=%s", candidate_model, attempt, exc)
+                if attempt >= 3:
+                    raise
+                time.sleep(2**attempt)
+
+    raise RuntimeError("All API model candidates failed")
 
 
 def article_stats() -> tuple[int, int, int]:
@@ -189,7 +217,7 @@ def build_frontmatter(title: str, slug: str, description: str, keywords: list[st
     today = dt.datetime.utcnow().strftime("%Y-%m-%d")
     word_count = len(re.findall(r"\w+", body))
     keywords_json = json.dumps(keywords, ensure_ascii=False)
-    stages = json.dumps(["claude-3.5-sonnet", "deepseek-r1", "llama-3.3-70b"], ensure_ascii=False)
+    stages = json.dumps(["claude-3.5-sonnet", "llama-3.3-70b-versatile", "llama-3.3-70b"], ensure_ascii=False)
     return (
         "---\n"
         f'title: "{title}"\n'
