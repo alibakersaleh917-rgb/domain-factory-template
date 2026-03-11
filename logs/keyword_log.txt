@@ -1,2 +1,4 @@
 [2026-03-11T00:10:34.747388] SELECTED: Rechtsanwalt online finden
 [2026-03-11T00:11:01.042267] USED: Rechtsanwalt online finden
+[2026-03-11T00:31:05.773430] SELECTED: Anwalt Erstberatung kostenlos
+[2026-03-11T00:31:31.358924] USED: Anwalt Erstberatung kostenlos

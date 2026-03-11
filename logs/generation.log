@@ -10,3 +10,15 @@
 2026-03-11 00:11:01,322 INFO stage=sitemap_ping duration_s=0.28
 2026-03-11 00:11:01,322 INFO Keyword stats queue_remaining=99 total_used=1
 2026-03-11 00:11:01,322 INFO stage=run_total duration_s=26.58
+2026-03-11 00:31:05,772 INFO Run started target_count=1 batch_mode=False allow_delay=False
+2026-03-11 00:31:26,533 INFO stage=stage1_write duration_s=20.76
+2026-03-11 00:31:29,131 INFO stage=stage2_seo_review duration_s=2.60
+2026-03-11 00:31:31,351 INFO stage=stage3_language_polish duration_s=2.22
+2026-03-11 00:31:31,357 INFO stage=stage4_internal_links duration_s=0.01
+2026-03-11 00:31:31,358 INFO Saved article content/posts/2026-03-11-kostenlose-erstberatung-beim-anwalt-der-ultimative-ratgeber.md
+2026-03-11 00:31:31,358 INFO stage=article_iteration duration_s=25.59
+2026-03-11 00:31:31,358 INFO Article completed path=content/posts/2026-03-11-kostenlose-erstberatung-beim-anwalt-der-ultimative-ratgeber.md pillar=False needs_review=True
+2026-03-11 00:31:31,359 INFO Pinging sitemap after generation
+2026-03-11 00:31:31,760 INFO stage=sitemap_ping duration_s=0.40
+2026-03-11 00:31:31,760 INFO Keyword stats queue_remaining=98 total_used=2
+2026-03-11 00:31:31,760 INFO stage=run_total duration_s=25.99
