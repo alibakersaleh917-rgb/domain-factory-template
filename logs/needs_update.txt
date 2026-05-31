@@ -1,17 +1,17 @@
 Articles needing manual review
 =============================
 
-- Günstige Rechtsberatung online: So finden Sie den passenden Anwalt | age: 76 days | reason: no internal links
-- Mietrecht in München: Leitfaden für Mieter und Vermieter | age: 74 days | reason: under 600 words
-- Kostenlose Erstberatung beim Anwalt: Der ultimative Ratgeber | age: 74 days | reason: under 600 words
-- Anwaltssuche Deutschland: Was kostet ein Anwalt wirklich? | age: 75 days | reason: no internal links
-- Archivierter Beitrag | age: 79 days | reason: under 600 words, no internal links
-- Die Anwaltssuche in Deutschland: So finden Sie den richtigen Rechtsbeistand | age: 78 days | reason: no internal links
-- Anwalt finden Deutschland: Vergleich von Online-Plattformen und traditionellen Kanzleien | age: 76 days | reason: no internal links
-- Bester Anwalt Deutschland finden: So gelingt die Suche nach dem passenden Rechtsbeistand | age: 76 days | reason: no internal links
-- Den richtigen Rechtsanwalt online finden: Der ultimative Leitfaden 2024 | age: 74 days | reason: under 600 words
-- Fachanwalt für Arbeitsrecht in Berlin: Expertenberatung für Arbeitnehmer und Arbeitgeber | age: 74 days | reason: under 600 words
-- Den besten Anwalt in Deutschland finden: So geht's wirklich! | age: 76 days | reason: no internal links
-- Anwalt finden Deutschland: So gelingt die Suche nach dem passenden Rechtsbeistand | age: 76 days | reason: no internal links
-- Rechtsanwalt beauftragen online: So finden Sie den passenden Anwalt | age: 76 days | reason: no internal links
-- Günstige Rechtsberatung online: Recht bekommen, ohne tief in die Tasche greifen zu müssen | age: 78 days | reason: no internal links
+- Anwalt finden Deutschland: So gelingt die Suche nach dem passenden Rechtsbeistand | age: 83 days | reason: no internal links
+- Günstige Rechtsberatung online: So finden Sie den passenden Anwalt | age: 83 days | reason: no internal links
+- Rechtsanwalt beauftragen online: So finden Sie den passenden Anwalt | age: 83 days | reason: no internal links
+- Den besten Anwalt in Deutschland finden: So geht's wirklich! | age: 83 days | reason: no internal links
+- Archivierter Beitrag | age: 86 days | reason: under 600 words, no internal links
+- Günstige Rechtsberatung online: Recht bekommen, ohne tief in die Tasche greifen zu müssen | age: 85 days | reason: no internal links
+- Fachanwalt für Arbeitsrecht in Berlin: Expertenberatung für Arbeitnehmer und Arbeitgeber | age: 81 days | reason: under 600 words
+- Anwaltssuche Deutschland: Was kostet ein Anwalt wirklich? | age: 82 days | reason: no internal links
+- Kostenlose Erstberatung beim Anwalt: Der ultimative Ratgeber | age: 81 days | reason: under 600 words
+- Die Anwaltssuche in Deutschland: So finden Sie den richtigen Rechtsbeistand | age: 85 days | reason: no internal links
+- Anwalt finden Deutschland: Vergleich von Online-Plattformen und traditionellen Kanzleien | age: 83 days | reason: no internal links
+- Bester Anwalt Deutschland finden: So gelingt die Suche nach dem passenden Rechtsbeistand | age: 83 days | reason: no internal links
+- Mietrecht in München: Leitfaden für Mieter und Vermieter | age: 81 days | reason: under 600 words
+- Den richtigen Rechtsanwalt online finden: Der ultimative Leitfaden 2024 | age: 81 days | reason: under 600 words
