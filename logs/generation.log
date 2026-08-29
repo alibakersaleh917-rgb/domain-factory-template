@@ -191,3 +191,6 @@
 2026-08-25 03:57:12,329 INFO Run started target_count=0 batch_mode=True allow_delay=False
 2026-08-25 03:57:12,329 INFO No publication today (humanized schedule)
 2026-08-25 03:57:12,329 INFO stage=run_total duration_s=0.00
+2026-08-29 10:00:15,190 INFO Run started target_count=0 batch_mode=True allow_delay=False
+2026-08-29 10:00:15,190 INFO No publication today (humanized schedule)
+2026-08-29 10:00:15,190 INFO stage=run_total duration_s=0.00
