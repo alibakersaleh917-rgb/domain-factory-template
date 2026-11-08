@@ -275,3 +275,6 @@
 2026-11-07 10:00:05,610 INFO Run started target_count=0 batch_mode=True allow_delay=False
 2026-11-07 10:00:05,610 INFO No publication today (humanized schedule)
 2026-11-07 10:00:05,610 INFO stage=run_total duration_s=0.00
+2026-11-08 10:14:12,865 INFO Run started target_count=0 batch_mode=True allow_delay=False
+2026-11-08 10:14:12,865 INFO No publication today (humanized schedule)
+2026-11-08 10:14:12,865 INFO stage=run_total duration_s=0.00
